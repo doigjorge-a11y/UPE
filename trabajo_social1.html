@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión - Trabajo Social</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; }
+        .tab-btn.active { border-bottom: 3px solid #059669; color: #059669; font-weight: 700; background-color: #ecfdf5; }
+    </style>
+</head>
+<body class="p-3 md:p-6">
+
+    <!-- MODAL DE ACCESO -->
+    <div id="modalLogin" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl max-w-md w-full p-6 space-y-5 shadow-2xl border border-slate-200">
+            <div class="text-center space-y-2">
+                <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-xl">
+                    <i class="fa-solid fa-hands-holding-child"></i>
+                </div>
+                <h2 class="text-xl font-bold text-slate-800">Módulo de Trabajo Social</h2>
+                <p class="text-xs text-slate-500">Seleccione su perfil de Trabajo Social para ingresar.</p>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Usuario / Equipo:*</label>
+                    <select id="loginUsuario" class="w-full text-sm p-3 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none font-medium">
+                        <option value="">-- Seleccione Perfil --</option>
+                        <option value="ADMIN">Administrador (Acceso Total)</option>
+                        <option value="RECEPCION">Recepcionista (Acceso Total)</option>
+                        <optgroup label="Trabajadores Sociales por Equipo">
+                            <option value="Trabajador Social - Equipo 1">Trabajador Social - Equipo 1</option>
+                            <option value="Trabajador Social - Equipo 2">Trabajador Social - Equipo 2</option>
+                            <option value="Trabajador Social - Equipo 3">Trabajador Social - Equipo 3</option>
+                            <option value="Trabajador Social - Equipo 4">Trabajador Social - Equipo 4</option>
+                            <option value="Trabajador Social - Equipo 5">Trabajador Social - Equipo 5</option>
+                            <option value="Trabajador Social - Equipo 6">Trabajador Social - Equipo 6</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <button onclick="iniciarSesion()" class="w-full py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-lg text-sm transition shadow-lg flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-right-to-bracket"></i> Ingresar al Sistema
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="max-w-7xl mx-auto bg-white rounded-xl shadow-xl overflow-hidden border border-slate-200">
+        <!-- Banner Superior -->
+        <div class="bg-slate-900 text-white p-5 flex flex-col md:flex-row items-center justify-between border-b-4 border-emerald-600">
+            <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-house-user text-3xl text-emerald-400"></i>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold tracking-wide">Evaluación Socioeconómica Integral</h1>
+                    <p class="text-xs text-slate-400">Visitas Domiciliarias, Entorno Familiar e Informes Sociales</p>
+                </div>
+            </div>
+            <div class="mt-3 md:mt-0 flex items-center gap-3">
+                <span id="badgeRolActivo" class="px-3 py-1 bg-slate-800 text-emerald-300 text-xs rounded-full font-semibold border border-slate-700 flex items-center gap-1.5">
+                    <i class="fa-solid fa-circle-user"></i> Sin Sesión
+                </span>
+                <button onclick="cerrarSesion()" class="px-3 py-1 bg-rose-600/80 hover:bg-rose-600 text-white text-xs rounded-full transition flex items-center gap-1">
+                    <i class="fa-solid fa-power-off"></i> Salir
+                </button>
+            </div>
+        </div>
+
+        <!-- PESTAÑAS -->
+        <div class="flex border-b border-slate-200 bg-slate-100 text-slate-600 text-sm font-semibold">
+            <button onclick="cambiarPestana('tab-formulario')" id="btn-tab-formulario" class="tab-btn active px-6 py-3.5 flex items-center gap-2 transition hover:text-emerald-600">
+                <i class="fa-solid fa-pen-to-square"></i> Ficha Social
+            </button>
+            <button onclick="cambiarPestana('tab-registros')" id="btn-tab-registros" class="tab-btn px-6 py-3.5 flex items-center gap-2 transition hover:text-emerald-600">
+                <i class="fa-solid fa-table-list"></i> Visitas y Fichas Registradas
+                <span id="badgeContador" class="ml-1 px-2 py-0.5 text-xs bg-emerald-600 text-white rounded-full">0</span>
+            </button>
+            <button onclick="cambiarPestana('tab-dashboard')" id="btn-tab-dashboard" class="tab-btn px-6 py-3.5 flex items-center gap-2 transition hover:text-emerald-600">
+                <i class="fa-solid fa-chart-line"></i> Dashboard Social
+            </button>
+        </div>
+
+        <!-- CONTENIDO -->
+        <div class="p-6">
+            <!-- PESTAÑA 1: FORMULARIO -->
+            <div id="tab-formulario" class="tab-content">
+                <form id="socialForm" onsubmit="guardarRegistro(event)" class="space-y-6">
+                    <input type="hidden" id="editIndex" value="-1">
+
+                    <!-- SECCIÓN 1: VINCULACIÓN -->
+                    <div class="bg-emerald-50/70 p-4 rounded-lg border border-emerald-200 space-y-3">
+                        <h2 class="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-link text-emerald-600"></i> 1. Vinculación y Asignación
+                        </h2>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Especialista (Trabajador Social):*</label>
+                                <select id="especialista" required class="w-full text-sm p-2.5 bg-white border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                    <option value="">-- Seleccione Equipo --</option>
+                                    <option value="Trabajador Social - Equipo 1">Trabajador Social - Equipo 1</option>
+                                    <option value="Trabajador Social - Equipo 2">Trabajador Social - Equipo 2</option>
+                                    <option value="Trabajador Social - Equipo 3">Trabajador Social - Equipo 3</option>
+                                    <option value="Trabajador Social - Equipo 4">Trabajador Social - Equipo 4</option>
+                                    <option value="Trabajador Social - Equipo 5">Trabajador Social - Equipo 5</option>
+                                    <option value="Trabajador Social - Equipo 6">Trabajador Social - Equipo 6</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">N° Expediente Administrativo (Enlace):*</label>
+                                <input type="text" id="numExpediente" placeholder="0000-2026" required pattern="[0-9]{4}-[0-9]{4}" title="Formato: xxxx-aaaa" class="w-full text-sm p-2.5 bg-white border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Fecha de Visita / Entrevista:*</label>
+                                <input type="date" id="fechaVisita" required class="w-full text-sm p-2.5 bg-white border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECCIÓN 2: EVALUACIÓN SOCIAL Y SOCIOECONÓMICA -->
+                    <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-3">
+                        <h2 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-people-roof text-slate-600"></i> 2. Evaluación Social y Diagnóstico
+                        </h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">N° DNI Titular:*</label>
+                                <input type="text" id="dni" maxlength="8" pattern="[0-9]{8}" required placeholder="8 dígitos" class="w-full text-sm p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Apellidos y Nombres:*</label>
+                                <input type="text" id="nombreTitular" required placeholder="Apellidos y Nombres" class="w-full text-sm p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Clasificación Socioeconómica:*</label>
+                                <select id="clasificacionSocial" required class="w-full text-sm p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500">
+                                    <option value="">-- Seleccione Nivel --</option>
+                                    <option value="Pobre Extremo">Pobre Extremo</option>
+                                    <option value="Pobre No Extremo">Pobre No Extremo</option>
+                                    <option value="No Pobre / Medio">No Pobre / Medio</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Modalidad de Intervención:*</label>
+                                <select id="modalidad" required class="w-full text-sm p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500">
+                                    <option value="Visita Domiciliaria">Visita Domiciliaria Campo</option>
+                                    <option value="Entrevista Presencial en Sede">Entrevista Presencial en Sede</option>
+                                    <option value="Verificación Telefónica / Virtual">Verificación Telefónica / Virtual</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Estado del Informe Social:*</label>
+                                <select id="estadoInforme" required class="w-full text-sm p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500">
+                                    <option value="">-- Seleccione Estado --</option>
+                                    <option value="1. Programado / Pendiente Visita">1. Programado / Pendiente Visita</option>
+                                    <option value="2. Informe Social en Elaboración">2. Informe Social en Elaboración</option>
+                                    <option value="3. Informe Social Concluido">3. Informe Social Concluido</option>
+                                    <option value="4. Direccion No Ubicada">4. Dirección No Ubicada</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">N° de Informe Social Emitido:</label>
+                                <input type="text" id="numInforme" placeholder="INF-001-2026-TS" class="w-full text-sm p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Resumen del Entorno Familiar y Redes de Apoyo (Máx 300 caracteres):</label>
+                            <textarea id="observaciones" maxlength="300" rows="2" placeholder="Carga familiar, habitabilidad, salud o apoyo comunal..." class="w-full text-sm p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end gap-3 pt-2">
+                        <button type="button" onclick="limpiarFormulario()" class="px-5 py-2 bg-slate-500 hover:bg-slate-600 text-white font-semibold rounded-lg text-sm transition">Limpiar</button>
+                        <button type="submit" id="btnGuardarText" class="px-6 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-lg text-sm shadow-md transition">Guardar Ficha Social</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- PESTAÑA 2: REGISTROS -->
+            <div id="tab-registros" class="tab-content hidden space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-3 bg-slate-50 p-4 rounded-lg border border-slate-200">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-800">Bandeja de Intervenciones Sociales</h2>
+                        <p class="text-xs text-slate-500" id="subtituloBandeja">Fichas socioeconómicas e informes de campo por equipo.</p>
+                    </div>
+                    <button onclick="exportarExcel()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-sm shadow transition flex items-center gap-2">
+                        <i class="fa-solid fa-file-excel text-lg"></i> Exportar a Excel (.xlsx)
+                    </button>
+                </div>
+
+                <!-- BUSCADOR -->
+                <div class="bg-emerald-50/50 p-3.5 rounded-lg border border-emerald-200/80 flex flex-col md:flex-row items-center justify-between gap-3">
+                    <div class="w-full md:w-2/3 flex items-center gap-2">
+                        <input type="text" id="inputBusqueda" onkeyup="if(event.key==='Enter') ejecutarBusqueda()" placeholder="Buscar por N° Expediente, Apellidos o DNI..." class="w-full px-3 py-2 bg-white text-xs border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        <button onclick="ejecutarBusqueda()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-md text-xs transition">Buscar</button>
+                        <button onclick="limpiarBusqueda()" class="px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-md text-xs transition">Limpiar</button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto rounded-lg border border-slate-200">
+                    <table class="w-full text-xs text-left text-slate-700">
+                        <thead class="text-xs text-white uppercase bg-slate-800">
+                            <tr>
+                                <th class="p-3">Especialista</th>
+                                <th class="p-3">N° Expediente</th>
+                                <th class="p-3">F. Visita</th>
+                                <th class="p-3">Titular</th>
+                                <th class="p-3">DNI</th>
+                                <th class="p-3">Clasif. Social</th>
+                                <th class="p-3">Modalidad</th>
+                                <th class="p-3">Estado Informe</th>
+                                <th class="p-3 text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaCuerpo" class="divide-y divide-slate-200 bg-white"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- PESTAÑA 3: DASHBOARD -->
+            <div id="tab-dashboard" class="tab-content hidden space-y-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl flex items-center gap-4">
+                        <div class="p-3 bg-emerald-600 text-white rounded-lg text-xl"><i class="fa-solid fa-house-chimney"></i></div>
+                        <div>
+                            <p class="text-xs font-semibold text-emerald-700 uppercase">Total Visitas / Fichas</p>
+                            <h3 id="kpiTotal" class="text-2xl font-black text-emerald-900">0</h3>
+                        </div>
+                    </div>
+                    <div class="bg-blue-50 border border-blue-200 p-4 rounded-xl flex items-center gap-4">
+                        <div class="p-3 bg-blue-600 text-white rounded-lg text-xl"><i class="fa-solid fa-file-shield"></i></div>
+                        <div>
+                            <p class="text-xs font-semibold text-blue-700 uppercase">Informes Sociales Emitidos</p>
+                            <h3 id="kpiAtendidos" class="text-2xl font-black text-blue-900">0</h3>
+                        </div>
+                    </div>
+                    <div class="bg-amber-50 border border-amber-200 p-4 rounded-xl flex items-center gap-4">
+                        <div class="p-3 bg-amber-600 text-white rounded-lg text-xl"><i class="fa-solid fa-hand-holding-hand"></i></div>
+                        <div>
+                            <p class="text-xs font-semibold text-amber-700 uppercase">Pobre / Pobre Extremo</p>
+                            <h3 id="kpiVulnerables" class="text-2xl font-black text-amber-900">0</h3>
+                        </div>
+                    </div>
+                    <div class="bg-indigo-50 border border-indigo-200 p-4 rounded-xl flex items-center gap-4">
+                        <div class="p-3 bg-indigo-600 text-white rounded-lg text-xl"><i class="fa-solid fa-chart-line"></i></div>
+                        <div>
+                            <p class="text-xs font-semibold text-indigo-700 uppercase">% Cobertura Social</p>
+                            <h3 id="kpiEficacia" class="text-2xl font-black text-indigo-900">0%</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white p-5 border border-slate-200 rounded-xl shadow-sm">
+                        <h3 class="text-sm font-bold text-slate-800 mb-4">Intervenciones por Equipo Social</h3>
+                        <canvas id="chartEspecialista" height="200"></canvas>
+                    </div>
+                    <div class="bg-white p-5 border border-slate-200 rounded-xl shadow-sm">
+                        <h3 class="text-sm font-bold text-slate-800 mb-4">Distribución Socioeconómica</h3>
+                        <canvas id="chartSocial" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const URL_GOOGLE_APPS_SCRIPT = 	"https://script.google.com/macros/s/AKfycbxJtDKYNQG9zuLw4jEwJwqQuQjY7I8FF76sXKHJYY_jc9wMUG9eMrqkK6TkOQBmuN3arQ/exec";
+        let usuarioActivo = null;
+        let rolUsuario = null;
+
+        let registros = [
+            { especialista: "Trabajador Social - Equipo 1", numExpediente: "1520-2026", fechaVisita: "04/09/2026", dni: "21668732", nombreTitular: "GARCÍA GARCÍA, CARLOS", clasificacionSocial: "Pobre Extremo", modalidad: "Visita Domiciliaria", estadoInforme: "3. Informe Social Concluido", numInforme: "INF-008-2026-TS", observaciones: "Vivienda en condición precaria. Requiere articulación socio-familiar." }
+        ];
+
+        let chartEsp = null, chartSoc = null;
+
+        function iniciarSesion() {
+            const usr = document.getElementById("loginUsuario").value;
+            if (!usr) return alert("Seleccione su perfil.");
+            usuarioActivo = usr;
+            if (usr === "ADMIN" || usr === "RECEPCION") {
+                rolUsuario = "GLOBAL";
+                document.getElementById("badgeRolActivo").innerHTML = `<i class="fa-solid fa-user-shield"></i> ${usr}`;
+                document.getElementById("especialista").disabled = false;
+            } else {
+                rolUsuario = "OPERATIVO";
+                document.getElementById("badgeRolActivo").innerHTML = `<i class="fa-solid fa-user-check"></i> ${usr}`;
+                document.getElementById("especialista").value = usr;
+                document.getElementById("especialista").disabled = true;
+            }
+            document.getElementById("modalLogin").classList.add("hidden");
+            actualizarTabla();
+        }
+
+        function cerrarSesion() {
+            usuarioActivo = null;
+            document.getElementById("modalLogin").classList.remove("hidden");
+        }
+
+        function cambiarPestana(tabId) {
+            document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
+            document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
+            document.getElementById(tabId).classList.remove("hidden");
+            document.getElementById("btn-" + tabId).classList.add("active");
+            if (tabId === 'tab-dashboard') actualizarDashboard();
+        }
+
+        function obtenerRegistrosPermitidos() {
+            return rolUsuario === "GLOBAL" ? registros : registros.filter(r => r.especialista === usuarioActivo);
+        }
+
+        function guardarRegistro(e) {
+            e.preventDefault();
+            const reg = {
+                especialista: document.getElementById("especialista").value,
+                numExpediente: document.getElementById("numExpediente").value,
+                fechaVisita: document.getElementById("fechaVisita").value,
+                dni: document.getElementById("dni").value,
+                nombreTitular: document.getElementById("nombreTitular").value.toUpperCase(),
+                clasificacionSocial: document.getElementById("clasificacionSocial").value,
+                modalidad: document.getElementById("modalidad").value,
+                estadoInforme: document.getElementById("estadoInforme").value,
+                numInforme: document.getElementById("numInforme").value || "S/N",
+                observaciones: document.getElementById("observaciones").value
+            };
+            registros.push(reg);
+            alert("✅ Ficha Social registrada con éxito.");
+            limpiarFormulario();
+            actualizarTabla();
+            cambiarPestana('tab-registros');
+        }
+
+        function actualizarTabla(lista = null) {
+            const permitidos = lista !== null ? lista : obtenerRegistrosPermitidos();
+            document.getElementById("badgeContador").innerText = permitidos.length;
+            const tbody = document.getElementById("tablaCuerpo");
+            tbody.innerHTML = "";
+            permitidos.forEach(r => {
+                tbody.innerHTML += `
+                    <tr class="border-b hover:bg-slate-50">
+                        <td class="p-3 font-semibold text-emerald-900">${r.especialista}</td>
+                        <td class="p-3 font-mono font-bold text-blue-700">${r.numExpediente}</td>
+                        <td class="p-3">${r.fechaVisita}</td>
+                        <td class="p-3 font-medium">${r.nombreTitular}</td>
+                        <td class="p-3">${r.dni}</td>
+                        <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">${r.clasificacionSocial}</span></td>
+                        <td class="p-3 text-[11px]">${r.modalidad}</td>
+                        <td class="p-3 text-[11px]">${r.estadoInforme}</td>
+                        <td class="p-3 text-center"><button onclick="alert('${r.observaciones}')" class="p-1 bg-emerald-100 text-emerald-700 rounded"><i class="fa-solid fa-eye"></i></button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function ejecutarBusqueda() {
+            const txt = document.getElementById("inputBusqueda").value.toLowerCase();
+            const filtrados = obtenerRegistrosPermitidos().filter(r => 
+                r.numExpediente.toLowerCase().includes(txt) || r.nombreTitular.toLowerCase().includes(txt) || r.dni.includes(txt)
+            );
+            actualizarTabla(filtrados);
+        }
+
+        function limpiarBusqueda() {
+            document.getElementById("inputBusqueda").value = "";
+            actualizarTabla();
+        }
+
+        function limpiarFormulario() {
+            document.getElementById("socialForm").reset();
+            if (rolUsuario === "OPERATIVO") document.getElementById("especialista").value = usuarioActivo;
+        }
+
+        function actualizarDashboard() {
+            const data = obtenerRegistrosPermitidos();
+            const total = data.length;
+            const concluidos = data.filter(r => r.estadoInforme.includes("3.")).length;
+            const vulnerables = data.filter(r => r.clasificacionSocial.includes("Pobre")).length;
+
+            document.getElementById("kpiTotal").innerText = total;
+            document.getElementById("kpiAtendidos").innerText = concluidos;
+            document.getElementById("kpiVulnerables").innerText = vulnerables;
+            document.getElementById("kpiEficacia").innerText = total > 0 ? ((concluidos/total)*100).toFixed(1) + "%" : "0%";
+
+            if (chartEsp) chartEsp.destroy();
+            chartEsp = new Chart(document.getElementById('chartEspecialista'), {
+                type: 'bar',
+                data: { labels: ['Eq 1', 'Eq 2', 'Eq 3', 'Eq 4', 'Eq 5', 'Eq 6'], datasets: [{ label: 'Fichas', data: [1,0,0,0,0,0], backgroundColor: '#059669' }] }
+            });
+
+            if (chartSoc) chartSoc.destroy();
+            chartSoc = new Chart(document.getElementById('chartSocial'), {
+                type: 'doughnut',
+                data: { labels: ['Pobre Extremo', 'Pobre No Extremo', 'No Pobre'], datasets: [{ data: [1, 0, 0], backgroundColor: ['#e11d48', '#f59e0b', '#10b981'] }] }
+            });
+        }
+
+        function exportarExcel() {
+            const ws = XLSX.utils.json_to_sheet(obtenerRegistrosPermitidos());
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "TrabajoSocial");
+            XLSX.writeFile(wb, "Reporte_Trabajo_Social.xlsx");
+        }
+    </script>
+</body>
+</html>
