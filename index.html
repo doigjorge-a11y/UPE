@@ -5,7 +5,7 @@
  <meta name="viewport" content="width=device-width, initial-scale=1.0">  
  <title>Sistema de Control y Gestión de Expedientes Legales</title>  
   
- <!-- Librerías Base -->  
+ <!-- Librerías CSS y JS -->  
  <script src="https://cdn.tailwindcss.com"></script>  
  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">  
  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>  
@@ -66,7 +66,7 @@
  </header>  
 
  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">  
-   <!-- Botón de Prueba -->
+   <!-- Botón de Prueba para el Ojo Visor -->
    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
      <h2 class="text-base font-bold text-slate-800 mb-2">Prueba de Trazabilidad Multidisciplinaria</h2>
      <p class="text-xs text-slate-500 mb-4">Haga clic en el botón para consultar la ficha consolidada del expediente de prueba (789012-2026 / 21668732):</p>
@@ -109,33 +109,29 @@
 
  <script>
  function verDetalle(criterio) {
-   const modal = document.getElementById('modalDetalle');
-   const contenedor = document.getElementById('modalContenido');
+   var modal = document.getElementById('modalDetalle');
+   var contenedor = document.getElementById('modalContenido');
    
-   // Muestra el modal asignando estilo flexible
    modal.style.display = 'flex';
    
-   contenedor.innerHTML = `
-     <div class="text-center py-10 space-y-3">
-       <i class="fa-solid fa-circle-notch fa-spin text-3xl text-brand-500"></i>
-       <p class="text-xs text-slate-500 font-medium">Consultando bases de datos de Legal, Trabajo Social y Psicología...</p>
-     </div>
-   `;
+   contenedor.innerHTML = '<div class="text-center py-10 space-y-3">' +
+     '<i class="fa-solid fa-circle-notch fa-spin text-3xl text-brand-500"></i>' +
+     '<p class="text-xs text-slate-500 font-medium">Consultando bases de datos de Legal, Trabajo Social y Psicología...</p>' +
+     '</div>';
 
    if (typeof google !== 'undefined' && google.script && google.script.run) {
      google.script.run
        .withSuccessHandler(renderizarTrazabilidad)
        .withFailureHandler(function(err) {
-         contenedor.innerHTML = `<div class="p-4 bg-red-50 text-red-700 rounded-xl border border-red-200 text-xs">Error al consultar datos: ${err.message}</div>`;
+         contenedor.innerHTML = '<div class="p-4 bg-red-50 text-red-700 rounded-xl border border-red-200 text-xs">Error al consultar datos: ' + err.message + '</div>';
        })
        .buscarTrazabilidadExpediente(criterio);
    } else {
-     // Simulación de respuesta inmediata
      setTimeout(function() {
        renderizarTrazabilidad({
          expediente: criterio,
          legal: { NumExpediente: '789012-2026', HojaTramite: '123456-2026', Apellidos: 'GARCIA GARCIA', Nombres: 'CARLOS', DNI: '21668732', TipoAsesoria: 'EMISIÓN DE DICTAMEN / INFORME', EstadoLegal: '2. CON INFORME LEGAL EMITIDO' },
-         trabajoSocial: { CodigoInforme: 'TS-0001', VisitaDomiciliaria: 'Realizada', SituacionSocioeconomica: 'Media Baja', EstadoInformeSocial: 'Concluido' },
+         trabajoSocial: { CodigoInforme: 'TS-0001', VisitaDomiciliaria: 'Realizada', EstadoInformeSocial: 'Concluido' },
          psicologia: { NumCitas: '3 Sesiones', RiesgoPresuntivo: 'Moderado', EstadoInformePsicologia: 'En Elaboración / Pendiente' }
        });
      }, 600);
@@ -143,75 +139,65 @@
  }
 
  function renderizarTrazabilidad(data) {
-   const contenedor = document.getElementById('modalContenido');
-   if (!data || (!data.legal && !data.trabajoSocial && !data.psicologia)) {
-     contenedor.innerHTML = `<div class="p-4 bg-amber-50 text-amber-800 rounded-xl border border-amber-200 text-xs">No se encontraron registros en ninguna de las 3 áreas para el criterio: <strong>${data?.expediente || ''}</strong>.</div>`;
+   var contenedor = document.getElementById('modalContenido');
+   if (!data) {
+     contenedor.innerHTML = '<div class="p-4 bg-amber-50 text-amber-800 rounded-xl border border-amber-200 text-xs">No se encontraron registros asociados.</div>';
      return;
    }
 
-   contenedor.innerHTML = `
-     <div class="bg-brand-50 border border-brand-100 rounded-xl p-4 flex items-center justify-between">
-       <div>
-         <span class="text-[10px] font-bold uppercase tracking-wider text-brand-700">Código / Identificador de Búsqueda</span>
-         <h4 class="text-base font-bold text-brand-900">${data.expediente}</h4>
-       </div>
-       <span class="px-3 py-1 bg-brand-500 text-white font-bold text-xs rounded-full shadow">Trazabilidad Activa</span>
-     </div>
+   var htmlLegal = data.legal ? 
+     '<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs">' +
+       '<div><span class="text-slate-400 block text-[10px]">N° Expediente:</span><strong>' + (data.legal.NumExpediente || '-') + '</strong></div>' +
+       '<div><span class="text-slate-400 block text-[10px]">Hoja Trámite:</span><strong>' + (data.legal.HojaTramite || '-') + '</strong></div>' +
+       '<div><span class="text-slate-400 block text-[10px]">Administrado:</span><strong>' + (data.legal.Apellidos || '') + ' ' + (data.legal.Nombres || '') + '</strong></div>' +
+       '<div><span class="text-slate-400 block text-[10px]">DNI:</span><strong>' + (data.legal.DNI || '-') + '</strong></div>' +
+       '<div><span class="text-slate-400 block text-[10px]">Tipo Asesoria:</span><strong>' + (data.legal.TipoAsesoria || '-') + '</strong></div>' +
+       '<div><span class="text-slate-400 block text-[10px]">Estado Legal:</span><span class="inline-block mt-0.5 px-2 py-0.5 bg-blue-100 text-blue-800 rounded font-semibold text-[11px]">' + (data.legal.EstadoLegal || 'En trámite') + '</span></div>' +
+     '</div>' : '<p class="text-slate-400 text-xs italic">Sin registros en el Área Legal.</p>';
 
-     <!-- 1. BLOQUE LEGAL -->
-     <div class="border border-blue-200 rounded-2xl overflow-hidden bg-white shadow-sm">
-       <div class="bg-blue-600 text-white px-4 py-2.5 font-semibold text-xs flex items-center space-x-2">
-         <i class="fa-solid fa-gavel"></i>
-         <span>1. MÓDULO LEGAL (ABOGADOS)</span>
-       </div>
-       <div class="p-4">
-         ${data.legal ? `
-           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs">
-             <div><span class="text-slate-400 block text-[10px]">N° Expediente:</span><strong>${data.legal.NumExpediente || '-'}</strong></div>
-             <div><span class="text-slate-400 block text-[10px]">Hoja Trámite:</span><strong>${data.legal.HojaTramite || '-'}</strong></div>
-             <div><span class="text-slate-400 block text-[10px]">Administrado:</span><strong>${data.legal.Apellidos \vert{}\vert{} ''}${data.legal.Nombres || ''}</strong></div>
-             <div><span class="text-slate-400 block text-[10px]">DNI:</span><strong>${data.legal.DNI || '-'}</strong></div>
-             <div><span class="text-slate-400 block text-[10px]">Tipo Asesoria:</span><strong>${data.legal.TipoAsesoria || '-'}</strong></div>
-             <div><span class="text-slate-400 block text-[10px]">Estado Legal:</span><span class="inline-block mt-0.5 px-2 py-0.5 bg-blue-100 text-blue-800 rounded font-semibold text-[11px]">${data.legal.EstadoLegal || 'En trámite'}</span></div>
-           </div>
-         ` : '<p class="text-slate-400 text-xs italic">Sin registros en el Área Legal.</p>'}
-       </div>
-     </div>
+   var htmlSocial = data.trabajoSocial ? 
+     '<div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">' +
+       '<div><span class="text-slate-400 block text-[10px]">Cód. Informe Social:</span><strong>' + (data.trabajoSocial.CodigoInforme || '-') + '</strong></div>' +
+       '<div><span class="text-slate-400 block text-[10px]">Visita Domiciliaria:</span><strong>' + (data.trabajoSocial.VisitaDomiciliaria || '-') + '</strong></div>' +
+       '<div><span class="text-slate-400 block text-[10px]">Estado Informe Social:</span><span class="inline-block mt-0.5 px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-semibold text-[11px]">' + (data.trabajoSocial.EstadoInformeSocial || 'Concluido') + '</span></div>' +
+     '</div>' : '<p class="text-slate-400 text-xs italic">Sin registros en Trabajo Social.</p>';
 
-     <!-- 2. BLOQUE TRABAJO SOCIAL -->
-     <div class="border border-emerald-200 rounded-2xl overflow-hidden bg-white shadow-sm">
-       <div class="bg-emerald-600 text-white px-4 py-2.5 font-semibold text-xs flex items-center space-x-2">
-         <i class="fa-solid fa-users"></i>
-         <span>2. EVALUACIÓN SOCIAL (TRABAJO SOCIAL)</span>
-       </div>
-       <div class="p-4">
-         ${data.trabajoSocial ? `
-           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-             <div><span class="text-slate-400 block text-[10px]">Cód. Informe Social:</span><strong>${data.trabajoSocial.CodigoInforme || '-'}</strong></div>
-             <div><span class="text-slate-400 block text-[10px]">Visita Domiciliaria:</span><strong>${data.trabajoSocial.VisitaDomiciliaria || '-'}</strong></div>
-             <div><span class="text-slate-400 block text-[10px]">Estado Informe Social:</span><span class="inline-block mt-0.5 px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-semibold text-[11px]">${data.trabajoSocial.EstadoInformeSocial || 'Concluido'}</span></div>
-           </div>
-         ` : '<p class="text-slate-400 text-xs italic">Sin registros en Trabajo Social.</p>'}
-       </div>
-     </div>
+   var htmlPsico = data.psicologia ? 
+     '<div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">' +
+       '<div><span class="text-slate-400 block text-[10px]">Sesiones / Citas:</span><strong>' + (data.psicologia.NumCitas || '-') + '</strong></div>' +
+       '<div><span class="text-slate-400 block text-[10px]">Riesgo Presuntivo:</span><strong>' + (data.psicologia.RiesgoPresuntivo || '-') + '</strong></div>' +
+       '<div><span class="text-slate-400 block text-[10px]">Estado Informe Psicológico:</span><span class="inline-block mt-0.5 px-2 py-0.5 bg-amber-100 text-amber-800 rounded font-semibold text-[11px]">' + (data.psicologia.EstadoInformePsicologia || 'En Elaboración') + '</span></div>' +
+     '</div>' : '<p class="text-slate-400 text-xs italic">Sin registros en Psicología.</p>';
 
-     <!-- 3. BLOQUE PSICOLOGÍA -->
-     <div class="border border-purple-200 rounded-2xl overflow-hidden bg-white shadow-sm">
-       <div class="bg-purple-600 text-white px-4 py-2.5 font-semibold text-xs flex items-center space-x-2">
-         <i class="fa-solid fa-brain"></i>
-         <span>3. EVALUACIÓN PSICOLÓGICA (PSICOLOGÍA)</span>
-       </div>
-       <div class="p-4">
-         ${data.psicologia ? `
-           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-             <div><span class="text-slate-400 block text-[10px]">Sesiones / Citas:</span><strong>${data.psicologia.NumCitas || '-'}</strong></div>
-             <div><span class="text-slate-400 block text-[10px]">Riesgo Presuntivo:</span><strong>${data.psicologia.RiesgoPresuntivo || '-'}</strong></div>
-             <div><span class="text-slate-400 block text-[10px]">Estado Informe Psicológico:</span><span class="inline-block mt-0.5 px-2 py-0.5 bg-amber-100 text-amber-800 rounded font-semibold text-[11px]">${data.psicologia.EstadoInformePsicologia || 'En Elaboración'}</span></div>
-           </div>
-         ` : '<p class="text-slate-400 text-xs italic">Sin registros en Psicología.</p>'}
-       </div>
-     </div>
-   `;
+   contenedor.innerHTML = 
+     '<div class="bg-brand-50 border border-brand-100 rounded-xl p-4 flex items-center justify-between mb-4">' +
+       '<div>' +
+         '<span class="text-[10px] font-bold uppercase tracking-wider text-brand-700">Código / Identificador de Búsqueda</span>' +
+         '<h4 class="text-base font-bold text-brand-900">' + data.expediente + '</h4>' +
+       '</div>' +
+       '<span class="px-3 py-1 bg-brand-500 text-white font-bold text-xs rounded-full shadow">Trazabilidad Activa</span>' +
+     '</div>' +
+
+     '<div class="border border-blue-200 rounded-2xl overflow-hidden bg-white shadow-sm mb-4">' +
+       '<div class="bg-blue-600 text-white px-4 py-2.5 font-semibold text-xs flex items-center space-x-2">' +
+         '<i class="fa-solid fa-gavel"></i><span>1. MÓDULO LEGAL (ABOGADOS)</span>' +
+       '</div>' +
+       '<div class="p-4">' + htmlLegal + '</div>' +
+     '</div>' +
+
+     '<div class="border border-emerald-200 rounded-2xl overflow-hidden bg-white shadow-sm mb-4">' +
+       '<div class="bg-emerald-600 text-white px-4 py-2.5 font-semibold text-xs flex items-center space-x-2">' +
+         '<i class="fa-solid fa-users"></i><span>2. EVALUACIÓN SOCIAL (TRABAJO SOCIAL)</span>' +
+       '</div>' +
+       '<div class="p-4">' + htmlSocial + '</div>' +
+     '</div>' +
+
+     '<div class="border border-purple-200 rounded-2xl overflow-hidden bg-white shadow-sm">' +
+       '<div class="bg-purple-600 text-white px-4 py-2.5 font-semibold text-xs flex items-center space-x-2">' +
+         '<i class="fa-solid fa-brain"></i><span>3. EVALUACIÓN PSICOLÓGICA (PSICOLOGÍA)</span>' +
+       '</div>' +
+       '<div class="p-4">' + htmlPsico + '</div>' +
+     '</div>';
  }
 
  function cerrarModalDetalle() {
