@@ -174,7 +174,7 @@
                     </span>
                 </div>
 
-                <form id="expedienteForm" onsubmit="guardarExpediente(event)" class="space-y-8">
+                <form id="expedienteForm" onsubmit="return guardarExpediente(event)" class="space-y-8">
                     
                     <!-- SECCIÓN 1: ASIGNACIÓN Y ESPECIALISTA -->
                     <div>
@@ -494,7 +494,7 @@
 
         // AUTENTICACIÓN
         function iniciarSesion(event) {
-            event.preventDefault();
+            if (event) event.preventDefault();
             const roleSelect = document.getElementById('userRoleSelect').value;
             if (!roleSelect) return;
 
@@ -520,6 +520,7 @@
             }
 
             cargarRegistros();
+            return false;
         }
 
         function cerrarSesion() {
@@ -542,7 +543,8 @@
             activeBtn.className = 'px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center space-x-2 bg-white text-brand-900 shadow';
 
             if (tabName === 'registros' || tabName === 'dashboard') {
-                cargarRegistros();
+                renderTabla(expedienteData);
+                actualizarDashboard(expedienteData);
             }
         }
 
@@ -560,8 +562,9 @@
             document.getElementById('field_edad').value = edad >= 0 ? edad : 0;
         }
 
-        async function guardarExpediente(e) {
-            e.preventDefault();
+        function guardarExpediente(e) {
+            if (e) e.preventDefault();
+            
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Guardando...</span>`;
@@ -587,46 +590,44 @@
                 acciones: document.getElementById('field_acciones').value
             };
 
-            // 1. Guardar de inmediato en la base de datos local
+            // 1. Guardar inmediatamente en localStorage
             const dbLocal = JSON.parse(localStorage.getItem('expedientes_legales_db') || '[]');
             dbLocal.unshift(nuevoRegistro);
             localStorage.setItem('expedientes_legales_db', JSON.stringify(dbLocal));
 
-            // 2. Actualizar la memoria global en ejecución
+            // 2. Actualizar el array en memoria
             expedienteData.unshift(nuevoRegistro);
 
             // 3. Enviar a Google Sheets en segundo plano
-            try {
-                if (URL_GOOGLE_APPS_SCRIPT && URL_GOOGLE_APPS_SCRIPT !== "PEGA_AQUI_TU_URL_DE_GOOGLE_APPS_SCRIPT") {
-                    fetch(URL_GOOGLE_APPS_SCRIPT, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(nuevoRegistro)
-                    });
-                }
-            } catch (error) {
-                console.error("Error al enviar a Google Sheets:", error);
+            if (URL_GOOGLE_APPS_SCRIPT && URL_GOOGLE_APPS_SCRIPT !== "PEGA_AQUI_TU_URL_DE_GOOGLE_APPS_SCRIPT") {
+                fetch(URL_GOOGLE_APPS_SCRIPT, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(nuevoRegistro)
+                }).catch(err => console.error("Error al enviar:", err));
             }
 
-            // 4. Notificar, limpiar y actualizar vistas
-            alert('¡Expediente registrado exitosamente!');
+            // 4. Limpiar formulario y restablecer botón
             document.getElementById('expedienteForm').reset();
             document.getElementById('field_fechaRegistro').valueAsDate = new Date();
             document.getElementById('field_fechaIngreso').valueAsDate = new Date();
-
+            
             btn.disabled = false;
             btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> <span>Registrar Expediente</span>`;
 
-            // 5. Ir a la pestaña de registros y renderizar inmediatamente la tabla
+            // 5. Notificar y cambiar de pestaña dibujando la tabla fijamente
+            alert('¡Expediente registrado exitosamente!');
             switchTab('registros');
             renderTabla(expedienteData);
             document.getElementById('badgeCount').textContent = expedienteData.length;
+
+            return false; // Evita el refresh
         }
 
         // CARGA DE REGISTROS CON FILTRADO DE PRIVACIDAD
         async function cargarRegistros() {
-            let data = [];
+            let data = JSON.parse(localStorage.getItem('expedientes_legales_db') || '[]');
 
             if (URL_GOOGLE_APPS_SCRIPT && URL_GOOGLE_APPS_SCRIPT !== "PEGA_AQUI_TU_URL_DE_GOOGLE_APPS_SCRIPT") {
                 try {
@@ -634,15 +635,11 @@
                     const jsonRes = await response.json();
                     if (Array.isArray(jsonRes) && jsonRes.length > 0) {
                         data = jsonRes;
-                    } else {
-                        data = JSON.parse(localStorage.getItem('expedientes_legales_db') || '[]');
+                        localStorage.setItem('expedientes_legales_db', JSON.stringify(data));
                     }
                 } catch (err) {
-                    console.warn("Cargando datos del almacenamiento local:", err);
-                    data = JSON.parse(localStorage.getItem('expedientes_legales_db') || '[]');
+                    console.warn("Usando datos locales por fallas de conexión:", err);
                 }
-            } else {
-                data = JSON.parse(localStorage.getItem('expedientes_legales_db') || '[]');
             }
 
             // Aplicar Filtro Estricto por Rol si no es Global
@@ -661,7 +658,7 @@
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
 
-            if (lista.length === 0) {
+            if (!lista || lista.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400">No se encontraron expedientes registrados.</td></tr>`;
                 return;
             }
@@ -704,10 +701,10 @@
         function filtrarTabla() {
             const query = document.getElementById('searchInput').value.toLowerCase();
             const filtrados = expedienteData.filter(i => 
-                i.dni.toLowerCase().includes(query) ||
-                i.numExpediente.toLowerCase().includes(query) ||
-                i.apellidos.toLowerCase().includes(query) ||
-                i.hojaTramite.toLowerCase().includes(query)
+                (i.dni && i.dni.toLowerCase().includes(query)) ||
+                (i.numExpediente && i.numExpediente.toLowerCase().includes(query)) ||
+                (i.apellidos && i.apellidos.toLowerCase().includes(query)) ||
+                (i.hojaTramite && i.hojaTramite.toLowerCase().includes(query))
             );
             renderTabla(filtrados);
         }
