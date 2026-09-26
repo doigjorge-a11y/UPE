@@ -5,16 +5,10 @@
  <meta name="viewport" content="width=device-width, initial-scale=1.0">  
  <title>Sistema de Control y Gestión de Expedientes Legales</title>  
   
- <!-- 1. Diseño y Estilos Visuales (Tailwind CSS) -->  
+ <!-- Librerías Base -->  
  <script src="https://cdn.tailwindcss.com"></script>  
-  
- <!-- 2. Iconos Profesionales (FontAwesome) -->  
  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">  
-  
- <!-- 3. Gráficos Estadísticos (Chart.js) -->  
  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>  
-  
- <!-- 4. Exportación Estilizada a Excel (xlsx-js-style) -->  
  <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>  
   
  <script>  
@@ -50,42 +44,9 @@
    background: #cbd5e1;  
    border-radius: 4px;  
  }  
- .custom-scrollbar::-webkit-scrollbar-thumb:hover {  
-   background: #94a3b8;  
- }  
  </style>  
 </head>  
 <body class="h-full flex flex-col font-sans text-slate-800 antialiased selection:bg-brand-500 selection:text-white">  
-  
- <!-- MODAL DE DETALLE / OJO VISOR MULTIDISCIPLINARIO -->
- <div id="modalDetalle" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-4 overflow-y-auto">
-   <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-slate-200">
-     <div class="bg-slate-900 px-6 py-4 text-white flex items-center justify-between border-b border-slate-800">
-       <div class="flex items-center space-x-3">
-         <div class="p-2 bg-brand-500/20 rounded-lg text-brand-500">
-           <i class="fa-solid fa-eye text-lg"></i>
-         </div>
-         <div>
-           <h3 class="font-bold text-base leading-tight">Ficha de Trazabilidad Multidisciplinaria</h3>
-           <p class="text-xs text-slate-400">Consolidado en tiempo real: Legal, Trabajo Social y Psicología</p>
-         </div>
-       </div>
-       <button onclick="cerrarModalDetalle()" class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
-         <i class="fa-solid fa-xmark text-lg"></i>
-       </button>
-     </div>
-     
-     <div id="modalContenido" class="p-6 overflow-y-auto space-y-6 text-sm custom-scrollbar">
-       <!-- Se llena dinámicamente -->
-     </div>
-
-     <div class="bg-slate-50 px-6 py-3 border-t border-slate-200 flex justify-end">
-       <button onclick="cerrarModalDetalle()" class="px-5 py-2 bg-slate-700 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold transition-all shadow">
-         Cerrar Vista
-       </button>
-     </div>
-   </div>
- </div>
 
  <!-- BANNER SUPERIOR CORPORATIVO -->  
  <header class="glass-header text-white sticky top-0 z-40 shadow-lg">  
@@ -105,22 +66,54 @@
  </header>  
 
  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">  
-   <!-- Botón de Prueba para el Ojo Visor -->
+   <!-- Botón de Prueba -->
    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
      <h2 class="text-base font-bold text-slate-800 mb-2">Prueba de Trazabilidad Multidisciplinaria</h2>
      <p class="text-xs text-slate-500 mb-4">Haga clic en el botón para consultar la ficha consolidada del expediente de prueba (789012-2026 / 21668732):</p>
-     <button onclick="verDetalle('789012-2026')" class="bg-brand-700 hover:bg-brand-900 text-white font-semibold py-2.5 px-5 rounded-xl shadow transition-all flex items-center space-x-2 text-xs">
+     <button type="button" onclick="verDetalle('789012-2026')" class="bg-brand-700 hover:bg-brand-900 text-white font-semibold py-2.5 px-5 rounded-xl shadow transition-all flex items-center space-x-2 text-xs">
        <i class="fa-solid fa-eye"></i>
        <span>Ver Ojo Visor (789012-2026)</span>
      </button>
    </div>
  </main>
 
+ <!-- MODAL DE DETALLE / OJO VISOR MULTIDISCIPLINARIO -->
+ <div id="modalDetalle" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-4 overflow-y-auto" style="display: none;">
+   <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-slate-200">
+     <div class="bg-slate-900 px-6 py-4 text-white flex items-center justify-between border-b border-slate-800">
+       <div class="flex items-center space-x-3">
+         <div class="p-2 bg-brand-500/20 rounded-lg text-brand-500">
+           <i class="fa-solid fa-eye text-lg"></i>
+         </div>
+         <div>
+           <h3 class="font-bold text-base leading-tight">Ficha de Trazabilidad Multidisciplinaria</h3>
+           <p class="text-xs text-slate-400">Consolidado en tiempo real: Legal, Trabajo Social y Psicología</p>
+         </div>
+       </div>
+       <button type="button" onclick="cerrarModalDetalle()" class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+         <i class="fa-solid fa-xmark text-lg"></i>
+       </button>
+     </div>
+     
+     <div id="modalContenido" class="p-6 overflow-y-auto space-y-6 text-sm custom-scrollbar">
+       <!-- Se llena dinámicamente -->
+     </div>
+
+     <div class="bg-slate-50 px-6 py-3 border-t border-slate-200 flex justify-end">
+       <button type="button" onclick="cerrarModalDetalle()" class="px-5 py-2 bg-slate-700 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold transition-all shadow">
+         Cerrar Vista
+       </button>
+     </div>
+   </div>
+ </div>
+
  <script>
  function verDetalle(criterio) {
    const modal = document.getElementById('modalDetalle');
    const contenedor = document.getElementById('modalContenido');
-   modal.classList.remove('hidden');
+   
+   // Muestra el modal asignando estilo flexible
+   modal.style.display = 'flex';
    
    contenedor.innerHTML = `
      <div class="text-center py-10 space-y-3">
@@ -137,15 +130,15 @@
        })
        .buscarTrazabilidadExpediente(criterio);
    } else {
-     // Simulación local si no está conectado a Apps Script aún
-     setTimeout(() => {
+     // Simulación de respuesta inmediata
+     setTimeout(function() {
        renderizarTrazabilidad({
          expediente: criterio,
          legal: { NumExpediente: '789012-2026', HojaTramite: '123456-2026', Apellidos: 'GARCIA GARCIA', Nombres: 'CARLOS', DNI: '21668732', TipoAsesoria: 'EMISIÓN DE DICTAMEN / INFORME', EstadoLegal: '2. CON INFORME LEGAL EMITIDO' },
          trabajoSocial: { CodigoInforme: 'TS-0001', VisitaDomiciliaria: 'Realizada', SituacionSocioeconomica: 'Media Baja', EstadoInformeSocial: 'Concluido' },
          psicologia: { NumCitas: '3 Sesiones', RiesgoPresuntivo: 'Moderado', EstadoInformePsicologia: 'En Elaboración / Pendiente' }
        });
-     }, 800);
+     }, 600);
    }
  }
 
@@ -222,7 +215,7 @@
  }
 
  function cerrarModalDetalle() {
-   document.getElementById('modalDetalle').classList.add('hidden');
+   document.getElementById('modalDetalle').style.display = 'none';
  }
  </script>
 </body>  
