@@ -218,6 +218,15 @@
                         <tbody id="tablaCuerpo" class="divide-y divide-slate-200 bg-white"></tbody>
                     </table>
                 </div>
+
+                <!-- CONTROLES DE PAGINACIÓN -->
+                <div class="flex items-center justify-between pt-2">
+                    <span id="infoPaginacion" class="text-xs text-slate-500">Mostrando página 1</span>
+                    <div class="flex gap-2">
+                        <button onclick="cambiarPagina(-1)" id="btnPagPrev" class="px-3 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded text-xs transition">Anterior</button>
+                        <button onclick="cambiarPagina(1)" id="btnPagNext" class="px-3 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded text-xs transition">Siguiente</button>
+                    </div>
+                </div>
             </div>
 
             <!-- PESTAÑA 3: DASHBOARD -->
@@ -279,6 +288,11 @@
         let registros = JSON.parse(localStorage.getItem('expedientes_social_db')) || MOCK_SOCIAL;
         let chartEsp = null, chartSoc = null;
 
+        // Variables de Paginación
+        let paginaActual = 1;
+        const registrosPorPagina = 10;
+        let listaFiltradaActual = null;
+
         window.addEventListener('DOMContentLoaded', () => {
             const fechaInput = document.getElementById('fechaVisita');
             if (fechaInput) fechaInput.valueAsDate = new Date();
@@ -331,6 +345,8 @@
             const btn = document.getElementById('btnGuardarText');
             if (btn) btn.disabled = true;
 
+            const editIndex = parseInt(document.getElementById("editIndex").value);
+
             const reg = {
                 modulo: "TRABAJO_SOCIAL",
                 especialista: document.getElementById("especialista").value,
@@ -345,11 +361,19 @@
                 observaciones: document.getElementById("observaciones").value
             };
 
-            // 1. Guardar de inmediato en la lista local y LocalStorage
-            registros.unshift(reg);
+            if (editIndex >= 0) {
+                // Modo Edición
+                registros[editIndex] = reg;
+                alert("✅ Ficha Social actualizada correctamente.");
+            } else {
+                // Modo Nuevo Registro
+                registros.unshift(reg);
+                alert("✅ Ficha Social registrada con éxito.");
+            }
+
             localStorage.setItem('expedientes_social_db', JSON.stringify(registros));
 
-            // 2. Enviar a Google Sheets en segundo plano sin bloquear
+            // Enviar a Google Sheets en segundo plano
             if (URL_GOOGLE_APPS_SCRIPT) {
                 fetch(URL_GOOGLE_APPS_SCRIPT, {
                     method: 'POST',
@@ -359,27 +383,56 @@
                 }).catch(err => console.error("Error enviando a Google Sheets:", err));
             }
 
-            // 3. Notificar, limpiar y cambiar de pestaña de forma estática
-            alert("✅ Ficha Social registrada con éxito.");
             limpiarFormulario();
             if (btn) btn.disabled = false;
 
             cambiarPestana('tab-registros');
-            return false; // Evita el refresco de página
+            return false;
+        }
+
+        function editarRegistro(indexEnBase) {
+            const r = registros[indexEnBase];
+            if (!r) return;
+
+            document.getElementById("editIndex").value = indexEnBase;
+            document.getElementById("especialista").value = r.especialista;
+            document.getElementById("numExpediente").value = r.numExpediente;
+            document.getElementById("fechaVisita").value = r.fechaVisita;
+            document.getElementById("dni").value = r.dni;
+            document.getElementById("nombreTitular").value = r.nombreTitular;
+            document.getElementById("clasificacionSocial").value = r.clasificacionSocial;
+            document.getElementById("modalidad").value = r.modalidad;
+            document.getElementById("estadoInforme").value = r.estadoInforme;
+            document.getElementById("numInforme").value = r.numInforme === "S/N" ? "" : r.numInforme;
+            document.getElementById("observaciones").value = r.observaciones;
+
+            document.getElementById("btnGuardarText").innerText = "Actualizar Ficha Social";
+            cambiarPestana('tab-formulario');
         }
 
         function actualizarTabla(lista = null) {
             const permitidos = lista !== null ? lista : obtenerRegistrosPermitidos();
+            listaFiltradaActual = permitidos;
             document.getElementById("badgeContador").innerText = permitidos.length;
+
+            const totalPaginas = Math.ceil(permitidos.length / registrosPorPagina) || 1;
+            if (paginaActual > totalPaginas) paginaActual = totalPaginas;
+
+            const inicio = (paginaActual - 1) * registrosPorPagina;
+            const fin = inicio + registrosPorPagina;
+            const paginaRegistros = permitidos.slice(inicio, fin);
+
             const tbody = document.getElementById("tablaCuerpo");
             tbody.innerHTML = "";
 
             if (permitidos.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-slate-400">No hay intervenciones sociales registradas.</td></tr>`;
+                document.getElementById("infoPaginacion").innerText = "Mostrando 0 registros";
                 return;
             }
 
-            permitidos.forEach(r => {
+            paginaRegistros.forEach((r) => {
+                const indexReal = registros.indexOf(r);
                 tbody.innerHTML += `
                     <tr class="border-b hover:bg-slate-50">
                         <td class="p-3 font-semibold text-emerald-900">${r.especialista}</td>
@@ -390,10 +443,22 @@
                         <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">${r.clasificacionSocial}</span></td>
                         <td class="p-3 text-[11px]">${r.modalidad}</td>
                         <td class="p-3 text-[11px]">${r.estadoInforme}</td>
-                        <td class="p-3 text-center"><button onclick="alert('${r.observaciones || 'Sin observaciones'}')" class="p-1 bg-emerald-100 text-emerald-700 rounded"><i class="fa-solid fa-eye"></i></button></td>
+                        <td class="p-3 text-center flex justify-center gap-1">
+                            <button onclick="alert('${r.observaciones || 'Sin observaciones'}')" class="p-1.5 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 rounded transition" title="Ver Observaciones"><i class="fa-solid fa-eye"></i></button>
+                            <button onclick="editarRegistro(${indexReal})" class="p-1.5 bg-amber-100 text-amber-700 hover:bg-amber-200 rounded transition" title="Editar Ficha"><i class="fa-solid fa-pen"></i></button>
+                        </td>
                     </tr>
                 `;
             });
+
+            document.getElementById("infoPaginacion").innerText = `Página ${paginaActual} de ${totalPaginas} (${permitidos.length} registros)`;
+            document.getElementById("btnPagPrev").disabled = paginaActual === 1;
+            document.getElementById("btnPagNext").disabled = paginaActual === totalPaginas;
+        }
+
+        function cambiarPagina(delta) {
+            paginaActual += delta;
+            actualizarTabla(listaFiltradaActual);
         }
 
         function ejecutarBusqueda() {
@@ -401,16 +466,20 @@
             const filtrados = obtenerRegistrosPermitidos().filter(r => 
                 r.numExpediente.toLowerCase().includes(txt) || r.nombreTitular.toLowerCase().includes(txt) || r.dni.includes(txt)
             );
+            paginaActual = 1;
             actualizarTabla(filtrados);
         }
 
         function limpiarBusqueda() {
             document.getElementById("inputBusqueda").value = "";
+            paginaActual = 1;
             actualizarTabla();
         }
 
         function limpiarFormulario() {
             document.getElementById("socialForm").reset();
+            document.getElementById("editIndex").value = "-1";
+            document.getElementById("btnGuardarText").innerText = "Guardar Ficha Social";
             const fechaInput = document.getElementById('fechaVisita');
             if (fechaInput) fechaInput.valueAsDate = new Date();
             if (rolUsuario === "OPERATIVO") document.getElementById("especialista").value = usuarioActivo;
