@@ -88,7 +88,7 @@
         <div class="p-6">
             <!-- PESTAÑA 1: FORMULARIO -->
             <div id="tab-formulario" class="tab-content">
-                <form id="psicoForm" onsubmit="guardarRegistro(event)" class="space-y-6">
+                <form id="psicoForm" onsubmit="return guardarRegistro(event)" class="space-y-6">
                     <input type="hidden" id="editIndex" value="-1">
 
                     <!-- SECCIÓN 1: VINCULACIÓN -->
@@ -265,16 +265,26 @@
     </div>
 
     <script>
-        const URL_GOOGLE_APPS_SCRIPT = 	"https://script.google.com/macros/s/AKfycbxJtDKYNQG9zuLw4jEwJwqQuQjY7I8FF76sXKHJYY_jc9wMUG9eMrqkK6TkOQBmuN3arQ/exec";
+        const URL_GOOGLE_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbxJtDKYNQG9zuLw4jEwJwqQuQjY7I8FF76sXKHJYY_jc9wMUG9eMrqkK6TkOQBmuN3arQ/exec";
         let usuarioActivo = null;
         let rolUsuario = null;
 
-        let registros = [
-            { especialista: "Psicólogo - Equipo 1", numExpediente: "1520-2026", fechaEvaluacion: "05/09/2026", dni: "21668732", nombreEvaluado: "GARCÍA GARCÍA, CARLOS", nivelRiesgo: "Severo", numCitas: 3, estadoInforme: "3. Informe Concluido y Firmado", numInforme: "INF-012-2026-PS", observaciones: "Sintomatología ansiosa moderada. Se recomienda seguimiento." },
-            { especialista: "Psicólogo - Equipo 2", numExpediente: "1106-2026", fechaEvaluacion: "14/09/2026", dni: "70291817", nombreEvaluado: "CASTRO VÁSQUEZ, DIEGO", nivelRiesgo: "Moderado", numCitas: 2, estadoInforme: "1. En Evaluación / Citas", numInforme: "Pendiente", observaciones: "Pendiente de segunda sesión presencial." }
+        const MOCK_PSICO = [
+            { especialista: "Psicólogo - Equipo 1", numExpediente: "1520-2026", fechaEvaluacion: "2026-09-05", dni: "21668732", nombreEvaluado: "GARCÍA GARCÍA, CARLOS", nivelRiesgo: "Severo", numCitas: 3, estadoInforme: "3. Informe Concluido y Firmado", numInforme: "INF-012-2026-PS", observaciones: "Sintomatología ansiosa moderada. Se recomienda seguimiento." },
+            { especialista: "Psicólogo - Equipo 2", numExpediente: "1106-2026", fechaEvaluacion: "2026-09-14", dni: "70291817", nombreEvaluado: "CASTRO VÁSQUEZ, DIEGO", nivelRiesgo: "Moderado", numCitas: 2, estadoInforme: "1. En Evaluación / Citas", numInforme: "Pendiente", observaciones: "Pendiente de segunda sesión presencial." }
         ];
 
+        let registros = JSON.parse(localStorage.getItem('expedientes_psicologia_db')) || MOCK_PSICO;
         let chartEsp = null, chartRie = null;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const fechaInput = document.getElementById('fechaEvaluacion');
+            if (fechaInput) fechaInput.valueAsDate = new Date();
+            
+            if (!localStorage.getItem('expedientes_psicologia_db')) {
+                localStorage.setItem('expedientes_psicologia_db', JSON.stringify(MOCK_PSICO));
+            }
+        });
 
         function iniciarSesion() {
             const usr = document.getElementById("loginUsuario").value;
@@ -304,6 +314,8 @@
             document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
             document.getElementById(tabId).classList.remove("hidden");
             document.getElementById("btn-" + tabId).classList.add("active");
+            
+            if (tabId === 'tab-registros') actualizarTabla();
             if (tabId === 'tab-dashboard') actualizarDashboard();
         }
 
@@ -312,24 +324,46 @@
         }
 
         function guardarRegistro(e) {
-            e.preventDefault();
+            if (e) e.preventDefault();
+            
+            const btn = document.getElementById('btnGuardarText');
+            if (btn) btn.disabled = true;
+
             const reg = {
+                modulo: "PSICOLOGIA",
                 especialista: document.getElementById("especialista").value,
                 numExpediente: document.getElementById("numExpediente").value,
                 fechaEvaluacion: document.getElementById("fechaEvaluacion").value,
                 dni: document.getElementById("dni").value,
                 nombreEvaluado: document.getElementById("nombreEvaluado").value.toUpperCase(),
                 nivelRiesgo: document.getElementById("nivelRiesgo").value,
-                numCitas: parseInt(document.getElementById("numCitas").value),
+                numCitas: parseInt(document.getElementById("numCitas").value) || 1,
                 estadoInforme: document.getElementById("estadoInforme").value,
                 numInforme: document.getElementById("numInforme").value || "S/N",
                 observaciones: document.getElementById("observaciones").value
             };
-            registros.push(reg);
+
+            // 1. Guardar de inmediato en la lista local y LocalStorage
+            registros.unshift(reg);
+            localStorage.setItem('expedientes_psicologia_db', JSON.stringify(registros));
+
+            // 2. Enviar a Google Sheets en segundo plano sin bloquear
+            if (URL_GOOGLE_APPS_SCRIPT) {
+                fetch(URL_GOOGLE_APPS_SCRIPT, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(reg)
+                }).catch(err => console.error("Error enviando a Google Sheets:", err));
+            }
+
+            // 3. Notificar, limpiar y cambiar de pestaña de forma estática
             alert("✅ Evaluación Psicológica registrada con éxito.");
             limpiarFormulario();
-            actualizarTabla();
+            if (btn) btn.disabled = false;
+            
             cambiarPestana('tab-registros');
+            return false; // Evita refresco de página
         }
 
         function actualizarTabla(lista = null) {
@@ -337,6 +371,12 @@
             document.getElementById("badgeContador").innerText = permitidos.length;
             const tbody = document.getElementById("tablaCuerpo");
             tbody.innerHTML = "";
+            
+            if (permitidos.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-slate-400">No hay evaluaciones registradas.</td></tr>`;
+                return;
+            }
+
             permitidos.forEach(r => {
                 tbody.innerHTML += `
                     <tr class="border-b hover:bg-slate-50">
@@ -348,7 +388,7 @@
                         <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${r.nivelRiesgo.includes('Severo') ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'}">${r.nivelRiesgo}</span></td>
                         <td class="p-3 text-[11px]">${r.estadoInforme}</td>
                         <td class="p-3 font-mono">${r.numInforme}</td>
-                        <td class="p-3 text-center"><button onclick="alert('${r.observaciones}')" class="p-1 bg-purple-100 text-purple-700 rounded"><i class="fa-solid fa-eye"></i></button></td>
+                        <td class="p-3 text-center"><button onclick="alert('${r.observaciones || 'Sin observaciones'}')" class="p-1 bg-purple-100 text-purple-700 rounded"><i class="fa-solid fa-eye"></i></button></td>
                     </tr>
                 `;
             });
@@ -369,6 +409,8 @@
 
         function limpiarFormulario() {
             document.getElementById("psicoForm").reset();
+            const fechaInput = document.getElementById('fechaEvaluacion');
+            if (fechaInput) fechaInput.valueAsDate = new Date();
             if (rolUsuario === "OPERATIVO") document.getElementById("especialista").value = usuarioActivo;
         }
 
@@ -383,21 +425,31 @@
             document.getElementById("kpiSeveros").innerText = severos;
             document.getElementById("kpiEficacia").innerText = total > 0 ? ((concluidos/total)*100).toFixed(1) + "%" : "0%";
 
+            const equipos = ['Psicólogo - Equipo 1', 'Psicólogo - Equipo 2', 'Psicólogo - Equipo 3', 'Psicólogo - Equipo 4', 'Psicólogo - Equipo 5', 'Psicólogo - Equipo 6'];
+            const conteoEq = equipos.map(eq => data.filter(r => r.especialista === eq).length);
+
             if (chartEsp) chartEsp.destroy();
             chartEsp = new Chart(document.getElementById('chartEspecialista'), {
                 type: 'bar',
-                data: { labels: ['Eq 1', 'Eq 2', 'Eq 3', 'Eq 4', 'Eq 5', 'Eq 6'], datasets: [{ label: 'Casos', data: [1,1,0,0,0,0], backgroundColor: '#7c3aed' }] }
+                data: { labels: ['Eq 1', 'Eq 2', 'Eq 3', 'Eq 4', 'Eq 5', 'Eq 6'], datasets: [{ label: 'Casos', data: conteoEq, backgroundColor: '#7c3aed' }] },
+                options: { responsive: true, maintainAspectRatio: false }
             });
+
+            const niveles = ['Bajo', 'Moderado', 'Severo', 'Muy Severo / Crítico'];
+            const conteoNiv = niveles.map(n => data.filter(r => r.nivelRiesgo === n).length);
 
             if (chartRie) chartRie.destroy();
             chartRie = new Chart(document.getElementById('chartRiesgo'), {
                 type: 'doughnut',
-                data: { labels: ['Bajo', 'Moderado', 'Severo'], datasets: [{ data: [0, 1, 1], backgroundColor: ['#10b981', '#f59e0b', '#e11d48'] }] }
+                data: { labels: niveles, datasets: [{ data: conteoNiv, backgroundColor: ['#10b981', '#f59e0b', '#e11d48', '#881337'] }] },
+                options: { responsive: true, maintainAspectRatio: false }
             });
         }
 
         function exportarExcel() {
-            const ws = XLSX.utils.json_to_sheet(obtenerRegistrosPermitidos());
+            const data = obtenerRegistrosPermitidos();
+            if (data.length === 0) return alert("No hay datos para exportar.");
+            const ws = XLSX.utils.json_to_sheet(data);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Psicologia");
             XLSX.writeFile(wb, "Reporte_Psicologia.xlsx");
