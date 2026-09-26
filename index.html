@@ -65,16 +65,56 @@
    </div>  
  </header>  
 
- <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">  
-   <!-- Botón de Prueba para el Ojo Visor -->
-   <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-     <h2 class="text-base font-bold text-slate-800 mb-2">Prueba de Trazabilidad Multidisciplinaria</h2>
-     <p class="text-xs text-slate-500 mb-4">Haga clic en el botón para consultar la ficha consolidada del expediente de prueba (789012-2026 / 21668732):</p>
-     <button type="button" onclick="verDetalle('789012-2026')" class="bg-brand-700 hover:bg-brand-900 text-white font-semibold py-2.5 px-5 rounded-xl shadow transition-all flex items-center space-x-2 text-xs">
-       <i class="fa-solid fa-eye"></i>
-       <span>Ver Ojo Visor (789012-2026)</span>
-     </button>
+ <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">  
+   
+   <!-- BARRA DE BÚSQUEDA Y FILTROS -->
+   <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row gap-3 items-center justify-between">
+     <div class="relative w-full md:w-96">
+       <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+       <input type="text" id="inputBusqueda" placeholder="Buscar por Exp, DNI o Apellidos..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-brand-500 focus:bg-white outline-none transition-all">
+     </div>
+     <div class="flex items-center space-x-2 w-full md:w-auto justify-end">
+       <button type="button" onclick="ejecutarBusqueda()" class="px-4 py-2 bg-brand-700 hover:bg-brand-900 text-white font-semibold text-xs rounded-xl shadow transition-all flex items-center space-x-1.5">
+         <i class="fa-solid fa-magnifying-glass"></i>
+         <span>BUSCAR</span>
+       </button>
+       <button type="button" onclick="limpiarBusqueda()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold text-xs rounded-xl transition-all">
+         LIMPIAR
+       </button>
+     </div>
    </div>
+
+   <!-- TABLA PRINCIPAL DE EXPEDIENTES -->
+   <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+     <div class="overflow-x-auto custom-scrollbar">
+       <table class="w-full text-left border-collapse text-xs">
+         <thead>
+           <tr class="bg-slate-900 text-white font-bold tracking-wider uppercase text-[10px]">
+             <th class="p-3.5">CÓDIGO</th>
+             <th class="p-3.5">TURNO / EQUIPO</th>
+             <th class="p-3.5">N° EXPEDIENTE</th>
+             <th class="p-3.5">HOJA TRÁMITE (HT)</th>
+             <th class="p-3.5">ADMINISTRADO</th>
+             <th class="p-3.5">DNI</th>
+             <th class="p-3.5">TIPO ASESORÍA</th>
+             <th class="p-3.5">ESTADO LEGAL</th>
+             <th class="p-3.5 text-center">ACCIONES</th>
+           </tr>
+         </thead>
+         <tbody id="tbodyExpedientes" class="divide-y divide-slate-100 text-slate-700">
+           <!-- Registros dinámicos -->
+         </tbody>
+       </table>
+     </div>
+     <div class="p-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+       <span id="txtPaginacion">Página 1 de 1</span>
+       <div class="space-x-1">
+         <button class="px-3 py-1 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-400 cursor-not-allowed">ANTERIOR</button>
+         <button class="px-3 py-1 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-400 cursor-not-allowed">SIGUIENTE</button>
+       </div>
+     </div>
+   </div>
+
  </main>
 
  <!-- MODAL DE DETALLE / OJO VISOR MULTIDISCIPLINARIO -->
@@ -108,10 +148,69 @@
  </div>
 
  <script>
+ // Datos base de ejemplo / iniciales
+ var listaExpedientes = [
+   { codigo: 'LEG-0002', equipo: 'ABOGADO - EQUIPO 1<br><span class="text-[10px] text-slate-400">TURNO: MAÑANA</span>', expediente: '789012-2026', ht: '123456-2026', administrado: 'GARCIA GARCIA, CARLOS', dni: '21668732', tipoAsesoria: 'EMISIÓN DE DICTAMEN / INFORME', estado: '2. CON INFORME LEGAL EMITIDO' }
+ ];
+
+ document.addEventListener('DOMContentLoaded', function() {
+   cargarTabla(listaExpedientes);
+ });
+
+ function cargarTabla(datos) {
+   var tbody = document.getElementById('tbodyExpedientes');
+   tbody.innerHTML = '';
+
+   if (!datos || datos.length === 0) {
+     tbody.innerHTML = '<tr><td colspan="9" class="p-6 text-center text-slate-400 italic">No se encontraron expedientes registrados.</td></tr>';
+     return;
+   }
+
+   datos.forEach(function(item) {
+     var tr = document.createElement('tr');
+     tr.className = 'hover:bg-slate-50 transition-all border-b border-slate-100';
+     tr.innerHTML = 
+       '<td class="p-3.5 font-bold text-brand-700">' + item.codigo + '</td>' +
+       '<td class="p-3.5">' + item.equipo + '</td>' +
+       '<td class="p-3.5 font-bold">' + item.expediente + '</td>' +
+       '<td class="p-3.5 text-slate-500">' + item.ht + '</td>' +
+       '<td class="p-3.5 font-medium text-slate-800">' + item.administrado + '</td>' +
+       '<td class="p-3.5 text-slate-600">' + item.dni + '</td>' +
+       '<td class="p-3.5"><span class="px-2 py-0.5 bg-brand-50 text-brand-700 border border-brand-100 rounded font-semibold text-[10px]">' + item.tipoAsesoria + '</span></td>' +
+       '<td class="p-3.5 text-slate-600">' + item.estado + '</td>' +
+       '<td class="p-3.5 text-center">' +
+         '<div class="flex items-center justify-center space-x-1">' +
+           '<button type="button" onclick="verDetalle(\'' + item.expediente + '\')" title="Ver Ojo Visor Multidisciplinario" class="p-1.5 bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg transition-all"><i class="fa-solid fa-eye"></i></button>' +
+           '<button type="button" title="Editar Expediente" class="p-1.5 bg-amber-100 text-amber-600 hover:bg-amber-600 hover:text-white rounded-lg transition-all"><i class="fa-solid fa-pen"></i></button>' +
+           '<button type="button" title="Eliminar Registro" class="p-1.5 bg-red-100 text-red-600 hover:bg-red-600 hover:text-white rounded-lg transition-all"><i class="fa-solid fa-trash"></i></button>' +
+         '</div>' +
+       '</td>';
+     tbody.appendChild(tr);
+   });
+ }
+
+ function ejecutarBusqueda() {
+   var valor = document.getElementById('inputBusqueda').value.trim().toLowerCase();
+   if (!valor) {
+     cargarTabla(listaExpedientes);
+     return;
+   }
+   var filtrados = listaExpedientes.filter(function(item) {
+     return item.expediente.toLowerCase().includes(valor) || 
+            item.dni.toLowerCase().includes(valor) || 
+            item.administrado.toLowerCase().includes(valor);
+   });
+   cargarTabla(filtrados);
+ }
+
+ function limpiarBusqueda() {
+   document.getElementById('inputBusqueda').value = '';
+   cargarTabla(listaExpedientes);
+ }
+
  function verDetalle(criterio) {
    var modal = document.getElementById('modalDetalle');
    var contenedor = document.getElementById('modalContenido');
-   
    modal.style.display = 'flex';
    
    contenedor.innerHTML = '<div class="text-center py-10 space-y-3">' +
