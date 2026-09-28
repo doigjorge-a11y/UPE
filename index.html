@@ -102,7 +102,7 @@
            </tr>
          </thead>
          <tbody id="tbodyExpedientes" class="divide-y divide-slate-100 text-slate-700">
-           <!-- Registros dinámicos cargados desde Google Sheets -->
+           <!-- Registros dinámicos cargados mediante fetch -->
          </tbody>
        </table>
      </div>
@@ -148,6 +148,9 @@
  </div>
 
  <script>
+ // PEGA AQUÍ TU URL DE APPS SCRIPT ENTRE LAS COMILLAS (ejemplo: "https://script.google.com/macros/s/.../exec")
+ const URL_APPS_SCRIPT = "PEGA_AQUI_TU_URL_DE_APPS_SCRIPT";
+
  var listaExpedientes = [];
 
  document.addEventListener('DOMContentLoaded', function() {
@@ -156,25 +159,22 @@
 
  function obtenerTodosLosExpedientes() {
    var tbody = document.getElementById('tbodyExpedientes');
-   tbody.innerHTML = '<tr><td colspan="9" class="p-6 text-center text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Cargando tabla completa de expedientes desde la base de datos...</td></tr>';
+   tbody.innerHTML = '<tr><td colspan="9" class="p-6 text-center text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Cargando tabla completa desde Google Sheets...</td></tr>';
 
-   if (typeof google !== 'undefined' && google.script && google.script.run) {
-     google.script.run
-       .withSuccessHandler(function(datos) {
-         listaExpedientes = datos || [];
-         cargarTabla(listaExpedientes);
-       })
-       .withFailureHandler(function(err) {
-         tbody.innerHTML = '<tr><td colspan="9" class="p-6 text-center text-red-500">Error al consultar Google Sheets: ' + err.message + '</td></tr>';
-       })
-       .obtenerListaLegalCompleta();
-   } else {
-     // Modo de prueba local
-     listaExpedientes = [
-       { codigo: 'LEG-0002', equipo: 'ABOGADO - EQUIPO 1', expediente: '789012-2026', ht: '123456-2026', administrado: 'GARCIA GARCIA, CARLOS', dni: '21668732', tipoAsesoria: 'EMISIÓN DE DICTAMEN', estado: '2. CON INFORME LEGAL EMITIDO' }
-     ];
-     cargarTabla(listaExpedientes);
+   if (URL_APPS_SCRIPT.includes("PEGA_AQUI")) {
+     tbody.innerHTML = '<tr><td colspan="9" class="p-6 text-center text-amber-600 font-semibold"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Debe reemplazar "PEGA_AQUI_TU_URL_DE_APPS_SCRIPT" por su URL de Web App activa (que termina en /exec) en la línea 127 de index.html.</td></tr>';
+     return;
    }
+
+   fetch(URL_APPS_SCRIPT + '?accion=obtenerLista')
+     .then(function(response) { return response.json(); })
+     .then(function(datos) {
+       listaExpedientes = datos || [];
+       cargarTabla(listaExpedientes);
+     })
+     .catch(function(err) {
+       tbody.innerHTML = '<tr><td colspan="9" class="p-6 text-center text-red-500">Error al consultar Google Sheets: ' + err.message + '</td></tr>';
+     });
  }
 
  function cargarTabla(datos) {
@@ -183,7 +183,7 @@
    tbody.innerHTML = '';
 
    if (!datos || datos.length === 0) {
-     tbody.innerHTML = '<tr><td colspan="9" class="p-6 text-center text-slate-400 italic">No se encontraron expedientes registrados.</td></tr>';
+     tbody.innerHTML = '<tr><td colspan="9" class="p-6 text-center text-slate-400 italic">No se encontraron expedientes registrados en Google Sheets.</td></tr>';
      txtPaginacion.innerText = 'Página 1 de 1 (0 registros)';
      return;
    }
@@ -199,7 +199,7 @@
        '<td class="p-3.5 font-medium text-slate-800">' + (item.administrado || '-') + '</td>' +
        '<td class="p-3.5 text-slate-600">' + (item.dni || '-') + '</td>' +
        '<td class="p-3.5"><span class="px-2 py-0.5 bg-brand-50 text-brand-700 border border-brand-100 rounded font-semibold text-[10px]">' + (item.tipoAsesoria || 'ASESORÍA') + '</span></td>' +
-       '<td class="p-3.5 text-slate-600">' + (item.estado || '-') + '</td>' +
+       '<td class="p-3.5 text-slate-600">' + (item.situacion || item.estado || '-') + '</td>' +
        '<td class="p-3.5 text-center">' +
          '<div class="flex items-center justify-center space-x-1">' +
            '<button type="button" onclick="verDetalle(\'' + item.expediente + '\')" title="Ver Ojo Visor Multidisciplinario" class="p-1.5 bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg transition-all"><i class="fa-solid fa-eye"></i></button>' +
@@ -242,23 +242,14 @@
      '<p class="text-xs text-slate-500 font-medium">Consultando bases de datos de Legal, Trabajo Social y Psicología...</p>' +
      '</div>';
 
-   if (typeof google !== 'undefined' && google.script && google.script.run) {
-     google.script.run
-       .withSuccessHandler(renderizarTrazabilidad)
-       .withFailureHandler(function(err) {
-         contenedor.innerHTML = '<div class="p-4 bg-red-50 text-red-700 rounded-xl border border-red-200 text-xs">Error al consultar datos: ' + err.message + '</div>';
-       })
-       .buscarTrazabilidadExpediente(criterio);
-   } else {
-     setTimeout(function() {
-       renderizarTrazabilidad({
-         expediente: criterio,
-         legal: { id: 'LEG-0002', equipo: 'ABOGADO - EQUIPO 1', ht: '123456-2026', expediente: '789012-2026', apellidos: 'GARCIA GARCIA', nombres: 'CARLOS', dni: '21668732', edad: '35', situacion: '2. CON INFORME LEGAL EMITIDO' },
-         trabajoSocial: { equipo: 'LIC. SOCIAL - EQUIPO A', clasificacionSE: 'Pobreza Relativa / Media Baja', modalidad: 'Visita Domiciliaria / Entrevista', estadoInforme: 'Concluido', acciones: 'Informe Social N° 045-2026 emitido y adjuntado.' },
-         psicologia: { equipo: 'PSI. CLÍNICO - EQUIPO 2', tipoIntervencion: 'Evaluación Psicológica Focalizada', estadoEval: 'En Elaboración / Pendiente', acciones: 'Segunda sesión de evaluación realizada. Pendiente dictamen.' }
-       });
-     }, 600);
-   }
+   fetch(URL_APPS_SCRIPT + '?accion=trazabilidad&criterio=' + encodeURIComponent(criterio))
+     .then(function(response) { return response.json(); })
+     .then(function(data) {
+       renderizarTrazabilidad(data);
+     })
+     .catch(function(err) {
+       contenedor.innerHTML = '<div class="p-4 bg-red-50 text-red-700 rounded-xl border border-red-200 text-xs">Error al consultar datos: ' + err.message + '</div>';
+     });
  }
 
  function renderizarTrazabilidad(data) {
