@@ -148,11 +148,7 @@
  </div>
 
  <script>
- // PEGA AQUÍ TU URL DE APPS SCRIPT ENTRE LAS COMILLAS (ejemplo: "https://script.google.com/macros/s/.../exec")
- const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbzD4-A7KOmQ9wgLxyHwTDIZLB5hc_wpDrc2wi9CDoQmviJyaK0rm3LcdVkIRQdeC1shWA/exec
-
-
-";
+ const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbzD4-A7KOmQ9wgLxyHwTDIZLB5hc_wpDrc2wi9CDoQmviJyaK0rm3LcdVkIRQdeC1shWA/exec";
 
  var listaExpedientes = [];
 
@@ -165,7 +161,7 @@
    tbody.innerHTML = '<tr><td colspan="9" class="p-6 text-center text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Cargando tabla completa desde Google Sheets...</td></tr>';
 
    if (URL_APPS_SCRIPT.includes("PEGA_AQUI")) {
-     tbody.innerHTML = '<tr><td colspan="9" class="p-6 text-center text-amber-600 font-semibold"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Debe reemplazar "PEGA_AQUI_TU_URL_DE_APPS_SCRIPT" por su URL de Web App activa (que termina en /exec) en la línea 127 de index.html.</td></tr>';
+     tbody.innerHTML = '<tr><td colspan="9" class="p-6 text-center text-amber-600 font-semibold"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Debe reemplazar URL_APPS_SCRIPT en el código.</td></tr>';
      return;
    }
 
