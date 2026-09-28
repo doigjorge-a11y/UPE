@@ -165,8 +165,14 @@
      return;
    }
 
-   fetch(URL_APPS_SCRIPT + '?accion=obtenerLista')
-     .then(function(response) { return response.json(); })
+   fetch(URL_APPS_SCRIPT + '?accion=obtenerLista', {
+     method: 'GET',
+     redirect: 'follow'
+   })
+     .then(function(response) { 
+       if (!response.ok) throw new Error('Error HTTP: ' + response.status);
+       return response.json(); 
+     })
      .then(function(datos) {
        listaExpedientes = datos || [];
        cargarTabla(listaExpedientes);
@@ -241,8 +247,14 @@
      '<p class="text-xs text-slate-500 font-medium">Consultando bases de datos de Legal, Trabajo Social y Psicología...</p>' +
      '</div>';
 
-   fetch(URL_APPS_SCRIPT + '?accion=trazabilidad&criterio=' + encodeURIComponent(criterio))
-     .then(function(response) { return response.json(); })
+   fetch(URL_APPS_SCRIPT + '?accion=trazabilidad&criterio=' + encodeURIComponent(criterio), {
+     method: 'GET',
+     redirect: 'follow'
+   })
+     .then(function(response) { 
+       if (!response.ok) throw new Error('Error HTTP: ' + response.status);
+       return response.json(); 
+     })
      .then(function(data) {
        renderizarTrazabilidad(data);
      })
