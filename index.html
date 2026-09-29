@@ -160,11 +160,6 @@
    var tbody = document.getElementById('tbodyExpedientes');
    tbody.innerHTML = '<tr><td colspan="9" class="p-6 text-center text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Cargando tabla completa desde Google Sheets...</td></tr>';
 
-   if (URL_APPS_SCRIPT.includes("PEGA_AQUI")) {
-     tbody.innerHTML = '<tr><td colspan="9" class="p-6 text-center text-amber-600 font-semibold"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Debe reemplazar URL_APPS_SCRIPT en el código.</td></tr>';
-     return;
-   }
-
    fetch(URL_APPS_SCRIPT + '?accion=obtenerLista', {
      method: 'GET',
      redirect: 'follow'
@@ -196,6 +191,9 @@
    datos.forEach(function(item) {
      var tr = document.createElement('tr');
      tr.className = 'hover:bg-slate-50 transition-all border-b border-slate-100';
+     
+     var idRef = item.codigo || item.expediente || item.ht;
+
      tr.innerHTML = 
        '<td class="p-3.5 font-bold text-brand-700">' + (item.codigo || '-') + '</td>' +
        '<td class="p-3.5">' + (item.equipo || '-') + '</td>' +
@@ -207,15 +205,59 @@
        '<td class="p-3.5 text-slate-600">' + (item.situacion || item.estado || '-') + '</td>' +
        '<td class="p-3.5 text-center">' +
          '<div class="flex items-center justify-center space-x-1">' +
-           '<button type="button" onclick="verDetalle(\'' + item.expediente + '\')" title="Ver Ojo Visor Multidisciplinario" class="p-1.5 bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg transition-all"><i class="fa-solid fa-eye"></i></button>' +
-           '<button type="button" title="Editar Expediente" class="p-1.5 bg-amber-100 text-amber-600 hover:bg-amber-600 hover:text-white rounded-lg transition-all"><i class="fa-solid fa-pen"></i></button>' +
-           '<button type="button" title="Eliminar Registro" class="p-1.5 bg-red-100 text-red-600 hover:bg-red-600 hover:text-white rounded-lg transition-all"><i class="fa-solid fa-trash"></i></button>' +
+           '<button type="button" onclick="verDetalle(\'' + (item.expediente || item.ht || item.dni) + '\')" title="Ver Ojo Visor Multidisciplinario" class="p-1.5 bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg transition-all"><i class="fa-solid fa-eye"></i></button>' +
+           '<button type="button" onclick="editarExpediente(\'' + idRef + '\')" title="Editar Expediente" class="p-1.5 bg-amber-100 text-amber-600 hover:bg-amber-600 hover:text-white rounded-lg transition-all"><i class="fa-solid fa-pen"></i></button>' +
+           '<button type="button" onclick="eliminarExpediente(\'' + idRef + '\')" title="Eliminar Registro" class="p-1.5 bg-red-100 text-red-600 hover:bg-red-600 hover:text-white rounded-lg transition-all"><i class="fa-solid fa-trash"></i></button>' +
          '</div>' +
        '</td>';
      tbody.appendChild(tr);
    });
 
    txtPaginacion.innerText = 'Página 1 de 1 (' + datos.length + ' registros)';
+ }
+
+ // --- FUNCIÓN PARA ELIMINAR REGISTRO DIRECTAMENTE ---
+ function eliminarExpediente(codigo) {
+   if (!codigo || codigo === '-') {
+     alert("No se identificó el código o expediente a eliminar.");
+     return;
+   }
+   if (confirm("⚠️ ¿Está seguro de que desea eliminar permanentemente el registro: " + codigo + "?")) {
+     var tbody = document.getElementById('tbodyExpedientes');
+     tbody.innerHTML = '<tr><td colspan="9" class="p-6 text-center text-amber-600"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Eliminando expediente de Google Sheets...</td></tr>';
+
+     fetch(URL_APPS_SCRIPT + '?accion=eliminar&id=' + encodeURIComponent(codigo), {
+       method: 'GET',
+       redirect: 'follow'
+     })
+       .then(function(res) { return res.json(); })
+       .then(function(respuesta) {
+         if (respuesta.success) {
+           alert("✅ " + respuesta.mensaje);
+         } else {
+           alert("⚠️ " + respuesta.mensaje);
+         }
+         obtenerTodosLosExpedientes(); // Recarga la lista actualizada
+       })
+       .catch(function(err) {
+         alert("Error de conexión al intentar eliminar: " + err.message);
+         obtenerTodosLosExpedientes();
+       });
+   }
+ }
+
+ // --- FUNCIÓN PARA EDITAR REGISTRO ---
+ function editarExpediente(codigo) {
+   if (!codigo || codigo === '-') {
+     alert("No se pudo obtener el identificador para edición.");
+     return;
+   }
+   var itemObj = listaExpedientes.find(function(el) {
+     return el.codigo === codigo || el.expediente === codigo || el.ht === codigo;
+   });
+
+   var nombre = itemObj ? itemObj.administrado : codigo;
+   alert("✏️ Modo de edición para: " + nombre + "\n(Recuerda enviar los cambios vía formulario para actualizar Google Sheets).");
  }
 
  function ejecutarBusqueda() {
