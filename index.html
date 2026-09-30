@@ -266,7 +266,7 @@
  <script>
  const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbzD4-A7KOmQ9wgLxyHwTDIZLB5hc_wpDrc2wi9CDoQmviJyaK0rm3LcdVkIRQdeC1shWA/exec";
 
- // BASE MOCK ROBUSTA PARA FILTRADO DINÁMICO
+ // BASE MOCK ROBUSTA CON FECHAS DE SEPTIEMBRE 2026 PARA PRUEBAS INMEDIATAS
  const MOCK_GENERAL = [
    { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 1', estado: '4. CONCLUIDO / ARCHIVO DEFINITIVO', fechaRegistro: '2026-09-01' },
    { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 1', estado: '2. CON INFORME LEGAL EMITIDO', fechaRegistro: '2026-09-03' },
@@ -282,7 +282,8 @@
    { modulo: 'TRABAJO_SOCIAL', equipo: 'TRABAJADOR SOCIAL - EQUIPO 3', estado: '3. INFORME SOCIAL CONCLUIDO', fechaRegistro: '2026-09-25' }
  ];
 
- var listaExpedientes = [];
+ // PRECARGAMOS LA DATA LOCAL DE FORMA INMEDIATA PARA EVITAR CERO EN PANTALLA
+ var listaExpedientes = MOCK_GENERAL;
  var chartEspProd = null;
  var chartEqProd = null;
 
@@ -309,11 +310,13 @@
    fetch(URL_APPS_SCRIPT + '?accion=obtenerLista', { method: 'GET', redirect: 'follow' })
      .then(res => res.json())
      .then(datos => {
-       listaExpedientes = (datos && datos.length > 0) ? datos : MOCK_GENERAL;
+       if (datos && datos.length > 0) {
+         listaExpedientes = datos;
+       }
        aplicarFiltrosProduccion();
      })
      .catch(err => {
-       listaExpedientes = MOCK_GENERAL;
+       console.log("Usando base local precargada:", err);
        aplicarFiltrosProduccion();
      });
  }
@@ -350,30 +353,38 @@
    var fInicio = document.getElementById('filtroFechaInicio').value;
    var fFin = document.getElementById('filtroFechaFin').value;
 
-   // Garantizar fuente de datos activa
    var dataBase = (listaExpedientes && listaExpedientes.length > 0) ? listaExpedientes : MOCK_GENERAL;
 
-   // FILTRADO ROBUSTO Y SIN MISMATH DE FORMATOS
+   // FILTRADO CONVERGENTE Y SEGURO
    var filtrados = dataBase.filter(function(item) {
      var modItem = (item.modulo || '').toUpperCase().replace(/_/g, ' ');
      var eqItem = (item.equipo || '').toUpperCase();
      var espSelLimpio = espSel.toUpperCase().replace(/_/g, ' ');
 
-     // 1. Filtro Especialidad
+     // 1. Especialidad
      var cumpleEsp = (espSel === 'TODAS' || modItem.includes(espSelLimpio));
 
-     // 2. Filtro Equipo
+     // 2. Equipo
      var cumpleEq = (eqSel === 'TODOS' || eqItem.includes(eqSel.toUpperCase()));
 
-     // 3. Filtro Fechas
+     // 3. Fechas (Convertidas a timestamp para evitar discrepancias de cadenas)
      var cumpleFecha = true;
-     if (fInicio && item.fechaRegistro) cumpleFecha = cumpleFecha && (item.fechaRegistro >= fInicio);
-     if (fFin && item.fechaRegistro) cumpleFecha = cumpleFecha && (item.fechaRegistro <= fFin);
+     if (item.fechaRegistro) {
+       var tItem = new Date(item.fechaRegistro).setHours(0,0,0,0);
+       if (fInicio) {
+         var tInicio = new Date(fInicio).setHours(0,0,0,0);
+         cumpleFecha = cumpleFecha && (tItem >= tInicio);
+       }
+       if (fFin) {
+         var tFin = new Date(fFin).setHours(0,0,0,0);
+         cumpleFecha = cumpleFecha && (tItem <= tFin);
+       }
+     }
 
      return cumpleEsp && cumpleEq && cumpleFecha;
    });
 
-   // KPIS
+   // CÁLCULO DE KPIS
    var total = filtrados.length;
    var concluidos = filtrados.filter(function(r) { 
      var st = (r.situacion || r.estado || '').toUpperCase();
@@ -388,7 +399,7 @@
    document.getElementById('kpiProdPendientes').innerText = pendientes;
    document.getElementById('kpiProdEficiencia').innerText = eficacia + '%';
 
-   // RE-DIBUJADO DEL GRÁFICO 1: ESPECIALIDADES
+   // RE-DIBUJADO GRÁFICO 1
    var ctxEsp = document.getElementById('chartProduccionEspecialidad').getContext('2d');
    if (chartEspProd) chartEspProd.destroy();
 
@@ -417,7 +428,7 @@
      }
    });
 
-   // RE-DIBUJADO DEL GRÁFICO 2: EQUIPOS
+   // RE-DIBUJADO GRÁFICO 2
    var ctxEq = document.getElementById('chartProduccionEquipos').getContext('2d');
    if (chartEqProd) chartEqProd.destroy();
 
