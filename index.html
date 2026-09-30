@@ -75,7 +75,6 @@
    
    <!-- SECCIÓN 1: TRAZABILIDAD 360° -->
    <div id="vista-trazabilidad" class="space-y-6">
-     <!-- BÚSQUEDA DE EXPEDIENTE -->
      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
        <h2 class="text-xs font-bold text-emerald-800 uppercase tracking-wider mb-1 flex items-center gap-2">
          <i class="fa-solid fa-magnifying-glass"></i> CONSULTA DE TRAZABILIDAD TRANSVERSAL
@@ -90,7 +89,6 @@
        </div>
      </div>
 
-     <!-- TARJETA PRINCIPAL DEL ADMINISTRADO -->
      <div id="contenedorResultadoTrazabilidad" class="space-y-6">
        <div class="bg-slate-900 text-white p-5 rounded-2xl shadow-md border border-slate-800">
          <p class="text-[10px] font-bold tracking-wider text-emerald-400 uppercase">EXPEDIENTE MULTIDISCIPLINARIO</p>
@@ -102,10 +100,8 @@
          </div>
        </div>
 
-       <!-- GRILLA DE TRES TARJETAS POR ESPECIALIDAD -->
        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-         
-         <!-- TARJETA 1: MÓDULO LEGAL -->
+         <!-- MÓDULO LEGAL -->
          <div class="bg-white rounded-2xl p-5 border-2 border-indigo-500/80 shadow-sm space-y-3">
            <div class="flex items-center justify-between border-b pb-2">
              <div class="flex items-center gap-2 font-bold text-xs text-slate-800">
@@ -124,7 +120,7 @@
            </div>
          </div>
 
-         <!-- TARJETA 2: MÓDULO PSICOLOGÍA -->
+         <!-- MÓDULO PSICOLOGÍA -->
          <div class="bg-white rounded-2xl p-5 border-2 border-teal-500/80 shadow-sm space-y-3">
            <div class="flex items-center justify-between border-b pb-2">
              <div class="flex items-center gap-2 font-bold text-xs text-slate-800">
@@ -143,7 +139,7 @@
            </div>
          </div>
 
-         <!-- TARJETA 3: TRABAJO SOCIAL -->
+         <!-- TRABAJO SOCIAL -->
          <div class="bg-white rounded-2xl p-5 border-2 border-emerald-500/80 shadow-sm space-y-3">
            <div class="flex items-center justify-between border-b pb-2">
              <div class="flex items-center gap-2 font-bold text-xs text-slate-800">
@@ -161,7 +157,6 @@
              <p id="obsSocial">SE RECEPCIONÓ EXPEDIENTE Y SE PROGRAMÓ VISITA.</p>
            </div>
          </div>
-
        </div>
      </div>
    </div>
@@ -173,11 +168,11 @@
      <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
        <div>
          <label class="block text-[11px] font-bold text-slate-600 mb-1">FECHA DESDE:</label>
-         <input type="date" id="filtroFechaInicio" onchange="aplicarFiltrosProduccion()" class="w-full text-xs p-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+         <input type="date" id="filtroFechaInicio" value="2026-09-01" onchange="aplicarFiltrosProduccion()" class="w-full text-xs p-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
        </div>
        <div>
          <label class="block text-[11px] font-bold text-slate-600 mb-1">FECHA HASTA:</label>
-         <input type="date" id="filtroFechaFin" onchange="aplicarFiltrosProduccion()" class="w-full text-xs p-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+         <input type="date" id="filtroFechaFin" value="2026-09-30" onchange="aplicarFiltrosProduccion()" class="w-full text-xs p-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
        </div>
        <div>
          <label class="block text-[11px] font-bold text-slate-600 mb-1">ESPECIALIDAD:</label>
@@ -266,14 +261,13 @@
  <script>
  const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbzD4-A7KOmQ9wgLxyHwTDIZLB5hc_wpDrc2wi9CDoQmviJyaK0rm3LcdVkIRQdeC1shWA/exec";
 
- // BASE MOCK ROBUSTA CON FECHAS DE SEPTIEMBRE 2026 PARA PRUEBAS INMEDIATAS
+ // BASE MOCK ROBUSTA PARA GARANTIZAR VISUALIZACIÓN INMEDIATA
  const MOCK_GENERAL = [
    { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 1', estado: '4. CONCLUIDO / ARCHIVO DEFINITIVO', fechaRegistro: '2026-09-01' },
    { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 1', estado: '2. CON INFORME LEGAL EMITIDO', fechaRegistro: '2026-09-03' },
    { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 1', estado: '2. CON INFORME LEGAL EMITIDO', fechaRegistro: '2026-09-04' },
    { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 1', estado: '1. EN CALIFICACIÓN / PENDIENTE DE ANÁLISIS', fechaRegistro: '2026-09-05' },
    { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 1', estado: '1. EN CALIFICACIÓN / PENDIENTE DE ANÁLISIS', fechaRegistro: '2026-09-06' },
-   { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 1', estado: '1. EN CALIFICACIÓN / PENDIENTE DE ANÁLISIS', fechaRegistro: '2026-09-07' },
    { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 2', estado: '2. CON INFORME LEGAL EMITIDO', fechaRegistro: '2026-09-08' },
    { modulo: 'PSICOLOGIA', equipo: 'PSICÓLOGO - EQUIPO 3', estado: '3. INFORME PSICOLÓGICO CONCLUIDO', fechaRegistro: '2026-09-12' },
    { modulo: 'PSICOLOGIA', equipo: 'PSICÓLOGO - EQUIPO 5', estado: '2. PROCESO DE EVALUACIÓN / TEST', fechaRegistro: '2026-09-15' },
@@ -282,12 +276,12 @@
    { modulo: 'TRABAJO_SOCIAL', equipo: 'TRABAJADOR SOCIAL - EQUIPO 3', estado: '3. INFORME SOCIAL CONCLUIDO', fechaRegistro: '2026-09-25' }
  ];
 
- // PRECARGAMOS LA DATA LOCAL DE FORMA INMEDIATA PARA EVITAR CERO EN PANTALLA
  var listaExpedientes = MOCK_GENERAL;
  var chartEspProd = null;
  var chartEqProd = null;
 
  document.addEventListener('DOMContentLoaded', function() {
+   aplicarFiltrosProduccion();
    obtenerTodosLosExpedientes();
  });
 
@@ -312,12 +306,11 @@
      .then(datos => {
        if (datos && datos.length > 0) {
          listaExpedientes = datos;
+         aplicarFiltrosProduccion();
        }
-       aplicarFiltrosProduccion();
      })
      .catch(err => {
-       console.log("Usando base local precargada:", err);
-       aplicarFiltrosProduccion();
+       console.log("Usando base local de respaldo por error de red:", err);
      });
  }
 
@@ -355,28 +348,28 @@
 
    var dataBase = (listaExpedientes && listaExpedientes.length > 0) ? listaExpedientes : MOCK_GENERAL;
 
-   // FILTRADO CONVERGENTE Y SEGURO
+   // FILTRADO ROBUSTO
    var filtrados = dataBase.filter(function(item) {
      var modItem = (item.modulo || '').toUpperCase().replace(/_/g, ' ');
      var eqItem = (item.equipo || '').toUpperCase();
      var espSelLimpio = espSel.toUpperCase().replace(/_/g, ' ');
 
-     // 1. Especialidad
+     // 1. Filtro Especialidad
      var cumpleEsp = (espSel === 'TODAS' || modItem.includes(espSelLimpio));
 
-     // 2. Equipo
+     // 2. Filtro Equipo
      var cumpleEq = (eqSel === 'TODOS' || eqItem.includes(eqSel.toUpperCase()));
 
-     // 3. Fechas (Convertidas a timestamp para evitar discrepancias de cadenas)
+     // 3. Filtro Fechas por Timestamp
      var cumpleFecha = true;
      if (item.fechaRegistro) {
-       var tItem = new Date(item.fechaRegistro).setHours(0,0,0,0);
+       var tItem = new Date(item.fechaRegistro + 'T00:00:00').getTime();
        if (fInicio) {
-         var tInicio = new Date(fInicio).setHours(0,0,0,0);
+         var tInicio = new Date(fInicio + 'T00:00:00').getTime();
          cumpleFecha = cumpleFecha && (tItem >= tInicio);
        }
        if (fFin) {
-         var tFin = new Date(fFin).setHours(0,0,0,0);
+         var tFin = new Date(fFin + 'T23:59:59').getTime();
          cumpleFecha = cumpleFecha && (tItem <= tFin);
        }
      }
@@ -399,7 +392,7 @@
    document.getElementById('kpiProdPendientes').innerText = pendientes;
    document.getElementById('kpiProdEficiencia').innerText = eficacia + '%';
 
-   // RE-DIBUJADO GRÁFICO 1
+   // RE-DIBUJADO GRÁFICO 1: ESPECIALIDAD
    var ctxEsp = document.getElementById('chartProduccionEspecialidad').getContext('2d');
    if (chartEspProd) chartEspProd.destroy();
 
@@ -428,7 +421,7 @@
      }
    });
 
-   // RE-DIBUJADO GRÁFICO 2
+   // RE-DIBUJADO GRÁFICO 2: EQUIPOS
    var ctxEq = document.getElementById('chartProduccionEquipos').getContext('2d');
    if (chartEqProd) chartEqProd.destroy();
 
