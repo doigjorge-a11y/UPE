@@ -58,7 +58,7 @@
          </div>  
          <div>  
            <h1 class="font-bold text-base sm:text-lg tracking-tight leading-none">Módulo de Control Legal</h1>  
-           <p class="text-[11px] text-brand-100 opacity-80 mt-0.5">Sistema Multidisciplinario de Expedientes</p>  
+           <p class="text-[11px] text-brand-100 opacity-80 mt-0.5">Consolidado Multidisciplinario de Consulta y Trazabilidad</p>  
          </div>  
        </div>  
      </div>  
@@ -84,7 +84,7 @@
      </div>
    </div>
 
-   <!-- TABLA PRINCIPAL DE EXPEDIENTES -->
+   <!-- TABLA PRINCIPAL DE EXPEDIENTES (SOLO CONSULTA Y TRAZABILIDAD) -->
    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
      <div class="overflow-x-auto custom-scrollbar">
        <table class="w-full text-left border-collapse text-xs">
@@ -98,7 +98,7 @@
              <th class="p-3.5">DNI / DOC</th>
              <th class="p-3.5">TIPO ASESORÍA</th>
              <th class="p-3.5">ESTADO LEGAL</th>
-             <th class="p-3.5 text-center">ACCIONES</th>
+             <th class="p-3.5 text-center">OJO VISOR</th>
            </tr>
          </thead>
          <tbody id="tbodyExpedientes" class="divide-y divide-slate-100 text-slate-700">
@@ -116,142 +116,6 @@
    </div>
 
  </main>
-
- <!-- MODAL DE MODIFICACIÓN Y SEGUIMIENTO (17 CAMPOS A-Q) -->
- <div id="modalEditar" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-4 overflow-y-auto" style="display: none;">
-   <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full flex flex-col overflow-hidden border border-slate-200 max-h-[92vh]">
-     <div class="bg-slate-900 px-6 py-4 text-white flex items-center justify-between border-b border-slate-800">
-       <div class="flex items-center space-x-3">
-         <div class="p-2 bg-amber-500/20 rounded-lg text-amber-500">
-           <i class="fa-solid fa-pen-to-square text-lg"></i>
-         </div>
-         <div>
-           <h3 class="font-bold text-base leading-tight">Modificación Integral de Expediente</h3>
-           <p class="text-xs text-slate-400">Actualización en tiempo real de la ficha del Área Legal</p>
-         </div>
-       </div>
-       <button type="button" onclick="cerrarModalEditar()" class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
-         <i class="fa-solid fa-xmark text-lg"></i>
-       </button>
-     </div>
-
-     <form id="formEditarExpediente" onsubmit="guardarEdicion(event)" class="p-6 overflow-y-auto space-y-6 text-xs custom-scrollbar">
-       
-       <!-- SECCIÓN 1: DATOS DEL TRÁMITE Y EXPEDIENTE (COL A - H) -->
-       <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
-         <div class="flex items-center space-x-2 text-brand-700 font-bold text-xs uppercase tracking-wider border-b border-slate-200 pb-2">
-           <i class="fa-solid fa-folder-open"></i>
-           <span>1. Datos del Trámite y Registro</span>
-         </div>
-         <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-           <div>
-             <label class="block font-semibold text-slate-700 mb-1">ID Registro (Col A)</label>
-             <input type="text" id="editCodigo" readonly class="w-full p-2 bg-slate-200 border border-slate-300 rounded-xl font-bold text-slate-600 outline-none cursor-not-allowed">
-           </div>
-           <div>
-             <label class="block font-semibold text-slate-700 mb-1">Turno (Col B)</label>
-             <input type="text" id="editTurno" class="w-full p-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500">
-           </div>
-           <div>
-             <label class="block font-semibold text-slate-700 mb-1">Especialista (Col C)</label>
-             <input type="text" id="editEspecialista" class="w-full p-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500">
-           </div>
-           <div>
-             <label class="block font-semibold text-slate-700 mb-1">N° Expediente (Col G)</label>
-             <input type="text" id="editExpediente" class="w-full p-2 bg-white border border-slate-200 rounded-xl font-bold outline-none focus:ring-2 focus:ring-brand-500">
-           </div>
-           <div>
-             <label class="block font-semibold text-slate-700 mb-1">Hoja Trámite - HT (Col F)</label>
-             <input type="text" id="editHT" class="w-full p-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500">
-           </div>
-           <div>
-             <label class="block font-semibold text-slate-700 mb-1">Fecha Registro (Col D)</label>
-             <input type="text" id="editFechaRegistro" placeholder="dd/mm/yyyy" class="w-full p-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500">
-           </div>
-           <div>
-             <label class="block font-semibold text-slate-700 mb-1">Fecha Ingreso (Col E)</label>
-             <input type="text" id="editFechaIngreso" placeholder="dd/mm/yyyy" class="w-full p-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500">
-           </div>
-           <div>
-             <label class="block font-semibold text-slate-700 mb-1">Folios (Col H)</label>
-             <input type="number" id="editFolios" class="w-full p-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500">
-           </div>
-         </div>
-       </div>
-
-       <!-- SECCIÓN 2: DATOS DEL CIUDADANO / ADMINISTRADO (COL I - O) -->
-       <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
-         <div class="flex items-center space-x-2 text-brand-700 font-bold text-xs uppercase tracking-wider border-b border-slate-200 pb-2">
-           <i class="fa-solid fa-user font-bold"></i>
-           <span>2. Identificación del Ciudadano / Administrado</span>
-         </div>
-         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-           <div>
-             <label class="block font-semibold text-slate-700 mb-1">Apellidos (Col I)</label>
-             <input type="text" id="editApellidos" class="w-full p-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500">
-           </div>
-           <div>
-             <label class="block font-semibold text-slate-700 mb-1">Nombres (Col J)</label>
-             <input type="text" id="editNombres" class="w-full p-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500">
-           </div>
-           <div>
-             <label class="block font-semibold text-slate-700 mb-1">DNI / Documento (Col L)</label>
-             <input type="text" id="editDNI" class="w-full p-2 bg-white border border-slate-200 rounded-xl font-bold outline-none focus:ring-2 focus:ring-brand-500">
-           </div>
-           <div>
-             <label class="block font-semibold text-slate-700 mb-1">Sexo (Col K)</label>
-             <select id="editSexo" class="w-full p-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500">
-               <option value="">Seleccione...</option>
-               <option value="M">Femenino</option>
-               <option value="H">Masculino</option>
-             </select>
-           </div>
-           <div>
-             <label class="block font-semibold text-slate-700 mb-1">Fecha Nacimiento (Col M)</label>
-             <input type="text" id="editFechaNacimiento" placeholder="dd/mm/yyyy" class="w-full p-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500">
-           </div>
-           <div>
-             <label class="block font-semibold text-slate-700 mb-1">Edad (Col N)</label>
-             <input type="number" id="editEdad" class="w-full p-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500">
-           </div>
-           <div class="col-span-1 md:col-span-3">
-             <label class="block font-semibold text-slate-700 mb-1">Distrito de Residencia (Col O)</label>
-             <input type="text" id="editDistrito" class="w-full p-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500">
-           </div>
-         </div>
-       </div>
-
-       <!-- SECCIÓN 3: ESTADO LEGAL Y ASESORÍA (COL P - Q) -->
-       <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
-         <div class="flex items-center space-x-2 text-brand-700 font-bold text-xs uppercase tracking-wider border-b border-slate-200 pb-2">
-           <i class="fa-solid fa-gavel"></i>
-           <span>3. Estado Legal y Tipo de Asesoría</span>
-         </div>
-         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-           <div>
-             <label class="block font-semibold text-slate-700 mb-1">Estado Legal / Situación (Col P)</label>
-             <select id="editSituacion" class="w-full p-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500 font-bold">
-               <option value="EN TRAMITE">EN TRAMITE</option>
-               <option value="OBSERVADO">OBSERVADO</option>
-               <option value="CONCLUIDO">CONCLUIDO</option>
-               <option value="PARA FIRMA">PARA FIRMA</option>
-               <option value="PARA REVISIÓN">PARA REVISIÓN</option>
-             </select>
-           </div>
-           <div>
-             <label class="block font-semibold text-slate-700 mb-1">Acciones / Tipo Asesoría (Col Q)</label>
-             <input type="text" id="editAcciones" class="w-full p-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500 font-semibold">
-           </div>
-         </div>
-       </div>
-
-       <div class="pt-2 flex justify-end space-x-2">
-         <button type="button" onclick="cerrarModalEditar()" class="px-5 py-2.5 bg-slate-100 text-slate-600 rounded-xl font-semibold hover:bg-slate-200 transition-all">Cancelar</button>
-         <button type="submit" class="px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl shadow transition-all">Guardar Cambios en Google Sheets</button>
-       </div>
-     </form>
-   </div>
- </div>
 
  <!-- MODAL DE DETALLE / OJO VISOR MULTIDISCIPLINARIO -->
  <div id="modalDetalle" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-4 overflow-y-auto" style="display: none;">
@@ -327,8 +191,6 @@
    datos.forEach(function(item) {
      var tr = document.createElement('tr');
      tr.className = 'hover:bg-slate-50 transition-all border-b border-slate-100';
-     
-     var idRef = item.codigo || item.expediente || item.ht;
 
      tr.innerHTML = 
        '<td class="p-3.5 font-bold text-brand-700">' + (item.codigo || '-') + '</td>' +
@@ -340,131 +202,14 @@
        '<td class="p-3.5"><span class="px-2 py-0.5 bg-brand-50 text-brand-700 border border-brand-100 rounded font-semibold text-[10px]">' + (item.tipoAsesoria || 'ASESORÍA') + '</span></td>' +
        '<td class="p-3.5 text-slate-600">' + (item.situacion || item.estado || '-') + '</td>' +
        '<td class="p-3.5 text-center">' +
-         '<div class="flex items-center justify-center space-x-1">' +
-           '<button type="button" onclick="verDetalle(\'' + (item.expediente || item.ht || item.dni) + '\')" title="Ver Ojo Visor Multidisciplinario" class="p-1.5 bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg transition-all"><i class="fa-solid fa-eye"></i></button>' +
-           '<button type="button" onclick="editarExpediente(\'' + idRef + '\')" title="Editar Expediente" class="p-1.5 bg-amber-100 text-amber-600 hover:bg-amber-600 hover:text-white rounded-lg transition-all"><i class="fa-solid fa-pen"></i></button>' +
-           '<button type="button" onclick="eliminarExpediente(\'' + idRef + '\')" title="Eliminar Registro" class="p-1.5 bg-red-100 text-red-600 hover:bg-red-600 hover:text-white rounded-lg transition-all"><i class="fa-solid fa-trash"></i></button>' +
-         '</div>' +
+         '<button type="button" onclick="verDetalle(\'' + (item.expediente || item.ht || item.dni) + '\')" title="Ver Ojo Visor Multidisciplinario" class="px-3 py-1 bg-blue-100 text-blue-700 hover:bg-blue-600 hover:text-white rounded-lg transition-all font-semibold flex items-center justify-center space-x-1 mx-auto">' +
+           '<i class="fa-solid fa-eye"></i><span>Trazabilidad</span>' +
+         '</button>' +
        '</td>';
      tbody.appendChild(tr);
    });
 
    txtPaginacion.innerText = 'Página 1 de 1 (' + datos.length + ' registros)';
- }
-
- function eliminarExpediente(codigo) {
-   if (!codigo || codigo === '-') {
-     alert("No se identificó el código o expediente a eliminar.");
-     return;
-   }
-   if (confirm("⚠️ ¿Está seguro de que desea eliminar permanentemente el registro: " + codigo + "?")) {
-     var tbody = document.getElementById('tbodyExpedientes');
-     tbody.innerHTML = '<tr><td colspan="9" class="p-6 text-center text-amber-600"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Eliminando expediente de Google Sheets...</td></tr>';
-
-     fetch(URL_APPS_SCRIPT + '?accion=eliminar&id=' + encodeURIComponent(codigo), {
-       method: 'GET',
-       redirect: 'follow'
-     })
-       .then(function(res) { return res.json(); })
-       .then(function(respuesta) {
-         if (respuesta.success) {
-           alert("✅ " + respuesta.mensaje);
-         } else {
-           alert("⚠️ " + respuesta.mensaje);
-         }
-         obtenerTodosLosExpedientes();
-       })
-       .catch(function(err) {
-         alert("Error de conexión al intentar eliminar: " + err.message);
-         obtenerTodosLosExpedientes();
-       });
-   }
- }
-
- // --- MODAL DE EDICIÓN EXCLUSIVO PARA REGISTROS PREVIAMENTE INGRESADOS POR CADA ÁREA ---
- function editarExpediente(codigo) {
-   if (!codigo || codigo === '-') {
-     alert("No se pudo obtener el identificador para edición.");
-     return;
-   }
-   var itemObj = listaExpedientes.find(function(el) {
-     return el.codigo === codigo || el.expediente === codigo || el.ht === codigo;
-   });
-
-   if (!itemObj) {
-     alert("No se encontraron los datos del expediente en memoria.");
-     return;
-   }
-
-   document.getElementById('editCodigo').value = itemObj.codigo || '';
-   document.getElementById('editTurno').value = itemObj.turno || '';
-   document.getElementById('editEspecialista').value = itemObj.especialista || '';
-   document.getElementById('editFechaRegistro').value = itemObj.fechaRegistro || '';
-   document.getElementById('editFechaIngreso').value = itemObj.fechaIngreso || '';
-   document.getElementById('editHT').value = itemObj.ht || '';
-   document.getElementById('editExpediente').value = itemObj.expediente || '';
-   document.getElementById('editFolios').value = itemObj.folios || '';
-   document.getElementById('editApellidos').value = itemObj.apellidos || '';
-   document.getElementById('editNombres').value = itemObj.nombres || '';
-   document.getElementById('editSexo').value = itemObj.sexo || '';
-   document.getElementById('editDNI').value = itemObj.dni || '';
-   document.getElementById('editFechaNacimiento').value = itemObj.fechaNacimiento || '';
-   document.getElementById('editEdad').value = itemObj.edad || '';
-   document.getElementById('editDistrito').value = itemObj.distrito || '';
-   document.getElementById('editSituacion').value = itemObj.situacion || 'EN TRAMITE';
-   document.getElementById('editAcciones').value = itemObj.acciones || itemObj.tipoAsesoria || '';
-
-   document.getElementById('modalEditar').style.display = 'flex';
- }
-
- function cerrarModalEditar() {
-   document.getElementById('modalEditar').style.display = 'none';
- }
-
- function guardarEdicion(e) {
-   e.preventDefault();
-
-   var payload = {
-     codigo: document.getElementById('editCodigo').value,
-     turno: document.getElementById('editTurno').value,
-     especialista: document.getElementById('editEspecialista').value,
-     fechaRegistro: document.getElementById('editFechaRegistro').value,
-     fechaIngreso: document.getElementById('editFechaIngreso').value,
-     ht: document.getElementById('editHT').value,
-     expediente: document.getElementById('editExpediente').value,
-     folios: document.getElementById('editFolios').value,
-     apellidos: document.getElementById('editApellidos').value,
-     nombres: document.getElementById('editNombres').value,
-     sexo: document.getElementById('editSexo').value,
-     dni: document.getElementById('editDNI').value,
-     fechaNacimiento: document.getElementById('editFechaNacimiento').value,
-     edad: document.getElementById('editEdad').value,
-     distrito: document.getElementById('editDistrito').value,
-     situacion: document.getElementById('editSituacion').value,
-     acciones: document.getElementById('editAcciones').value
-   };
-
-   var tbody = document.getElementById('tbodyExpedientes');
-   tbody.innerHTML = '<tr><td colspan="9" class="p-6 text-center text-amber-600"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Guardando cambios en Google Sheets...</td></tr>';
-   cerrarModalEditar();
-
-   fetch(URL_APPS_SCRIPT + '?accion=editar&payload=' + encodeURIComponent(JSON.stringify(payload)), {
-     method: 'GET',
-     redirect: 'follow'
-   })
-     .then(function(res) { return res.json(); })
-     .then(function(respuesta) {
-       if (respuesta.success) {
-         alert("✅ " + respuesta.mensaje);
-       } else {
-         alert("⚠️ " + respuesta.mensaje);
-       }
-       obtenerTodosLosExpedientes();
-     })
-     .catch(function(err) {
-       alert("Error de conexión al guardar cambios: " + err.message);
-       obtenerTodosLosExpedientes();
-     });
  }
 
  function ejecutarBusqueda() {
