@@ -266,7 +266,7 @@
  <script>
  const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbzD4-A7KOmQ9wgLxyHwTDIZLB5hc_wpDrc2wi9CDoQmviJyaK0rm3LcdVkIRQdeC1shWA/exec";
 
- // BASE MOCK DE PRUEBAS COMPLETA PARA PRUEBAS LOCALES Y FILTRADO
+ // BASE MOCK ROBUSTA PARA FILTRADO DINÁMICO
  const MOCK_GENERAL = [
    { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 1', estado: '4. CONCLUIDO / ARCHIVO DEFINITIVO', fechaRegistro: '2026-09-01' },
    { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 1', estado: '2. CON INFORME LEGAL EMITIDO', fechaRegistro: '2026-09-03' },
@@ -313,7 +313,6 @@
        aplicarFiltrosProduccion();
      })
      .catch(err => {
-       console.log("Cargando base local para interacción de filtros:", err);
        listaExpedientes = MOCK_GENERAL;
        aplicarFiltrosProduccion();
      });
@@ -339,20 +338,6 @@
          document.getElementById('fecLegal').innerText = data.legal.fechaRegistro || '29/09/2026';
          document.getElementById('obsLegal').innerText = data.legal.acciones || 'INFORME EMITIDO Y NOTIFICADO A OTRA INSTANCIA.';
        }
-       if (data.psicologia) {
-         document.getElementById('stPsico').innerText = data.psicologia.estadoEval || '2. PROCESO DE EVALUACIÓN / TEST';
-         document.getElementById('respPsico').innerText = data.psicologia.equipo || 'PSICÓLOGO - EQUIPO 1';
-         document.getElementById('detPsico').innerText = data.psicologia.tipoIntervencion || 'EVALUACIÓN INTEGRAL';
-         document.getElementById('fecPsico').innerText = data.psicologia.fechaRegistro || '29/09/2026';
-         document.getElementById('obsPsico').innerText = data.psicologia.acciones || 'PRIMERA SESIÓN EFECTUADA. PENDIENTE SEGUNDA CITA.';
-       }
-       if (data.trabajoSocial) {
-         document.getElementById('stSocial').innerText = data.trabajoSocial.estadoInforme || '1. PROGRAMADO / PENDIENTE VISITA';
-         document.getElementById('respSocial').innerText = data.trabajoSocial.equipo || 'TRABAJADOR SOCIAL - EQUIPO 3';
-         document.getElementById('detSocial').innerText = data.trabajoSocial.clasificacionSE || 'POBRE NO EXTREMO';
-         document.getElementById('fecSocial').innerText = data.trabajoSocial.fechaRegistro || '29/09/2026';
-         document.getElementById('obsSocial').innerText = data.trabajoSocial.acciones || 'SE RECEPCIONÓ EXPEDIENTE Y SE PROGRAMÓ VISITA.';
-       }
      })
      .catch(err => {
        console.log("Consulta trazabilidad procesada.", err);
@@ -365,21 +350,22 @@
    var fInicio = document.getElementById('filtroFechaInicio').value;
    var fFin = document.getElementById('filtroFechaFin').value;
 
+   // Garantizar fuente de datos activa
    var dataBase = (listaExpedientes && listaExpedientes.length > 0) ? listaExpedientes : MOCK_GENERAL;
 
-   // LÓGICA DE FILTRADO UNIFICADA Y FLEXIBLE
+   // FILTRADO ROBUSTO Y SIN MISMATH DE FORMATOS
    var filtrados = dataBase.filter(function(item) {
-     var modItem = (item.modulo || '').toUpperCase().replace('_', ' ');
+     var modItem = (item.modulo || '').toUpperCase().replace(/_/g, ' ');
      var eqItem = (item.equipo || '').toUpperCase();
-     var espSelLimpio = espSel.replace('_', ' ');
+     var espSelLimpio = espSel.toUpperCase().replace(/_/g, ' ');
 
-     // 1. Validar Especialidad
+     // 1. Filtro Especialidad
      var cumpleEsp = (espSel === 'TODAS' || modItem.includes(espSelLimpio));
 
-     // 2. Validar Equipo
-     var cumpleEq = (eqSel === 'TODOS' || eqItem.includes(eqSel));
+     // 2. Filtro Equipo
+     var cumpleEq = (eqSel === 'TODOS' || eqItem.includes(eqSel.toUpperCase()));
 
-     // 3. Validar Rango de Fechas
+     // 3. Filtro Fechas
      var cumpleFecha = true;
      if (fInicio && item.fechaRegistro) cumpleFecha = cumpleFecha && (item.fechaRegistro >= fInicio);
      if (fFin && item.fechaRegistro) cumpleFecha = cumpleFecha && (item.fechaRegistro <= fFin);
@@ -387,7 +373,7 @@
      return cumpleEsp && cumpleEq && cumpleFecha;
    });
 
-   // CÁLCULO DE KPIS
+   // KPIS
    var total = filtrados.length;
    var concluidos = filtrados.filter(function(r) { 
      var st = (r.situacion || r.estado || '').toUpperCase();
@@ -395,15 +381,14 @@
    }).length;
 
    var pendientes = total - concluidos;
-   var eficacia = total > 0 ? ((concluidos / total) * 100).toFixed(1) : 0;
+   var eficacia = total > 0 ? ((concluidos / total) * 100).toFixed(1) : "0.0";
 
-   // IMPRESIÓN DE RESULTADOS EN TARJETAS
    document.getElementById('kpiProdTotal').innerText = total;
    document.getElementById('kpiProdConcluidos').innerText = concluidos;
    document.getElementById('kpiProdPendientes').innerText = pendientes;
    document.getElementById('kpiProdEficiencia').innerText = eficacia + '%';
 
-   // RE-RENDERIZADO DEL GRÁFICO 1: PRODUCCIÓN POR ESPECIALIDAD
+   // RE-DIBUJADO DEL GRÁFICO 1: ESPECIALIDADES
    var ctxEsp = document.getElementById('chartProduccionEspecialidad').getContext('2d');
    if (chartEspProd) chartEspProd.destroy();
 
@@ -432,7 +417,7 @@
      }
    });
 
-   // RE-RENDERIZADO DEL GRÁFICO 2: CARGA POR EQUIPOS (1 AL 6)
+   // RE-DIBUJADO DEL GRÁFICO 2: EQUIPOS
    var ctxEq = document.getElementById('chartProduccionEquipos').getContext('2d');
    if (chartEqProd) chartEqProd.destroy();
 
