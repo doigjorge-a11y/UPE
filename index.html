@@ -117,7 +117,7 @@
 
  </main>
 
- <!-- MODAL COMPLETO DE MODIFICACIÓN (17 CAMPOS A-Q) -->
+ <!-- MODAL DE MODIFICACIÓN Y SEGUIMIENTO (17 CAMPOS A-Q) -->
  <div id="modalEditar" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-4 overflow-y-auto" style="display: none;">
    <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full flex flex-col overflow-hidden border border-slate-200 max-h-[92vh]">
      <div class="bg-slate-900 px-6 py-4 text-white flex items-center justify-between border-b border-slate-800">
@@ -127,7 +127,7 @@
          </div>
          <div>
            <h3 class="font-bold text-base leading-tight">Modificación Integral de Expediente</h3>
-           <p class="text-xs text-slate-400">Edición completa de la matriz de 17 campos de la Base de Datos Legal</p>
+           <p class="text-xs text-slate-400">Actualización en tiempo real de la ficha del Área Legal</p>
          </div>
        </div>
        <button type="button" onclick="cerrarModalEditar()" class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
@@ -146,7 +146,7 @@
          <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
            <div>
              <label class="block font-semibold text-slate-700 mb-1">ID Registro (Col A)</label>
-             <input type="text" id="editCodigo" readonly class="w-full p-2 bg-slate-200 border border-slate-300 rounded-xl font-bold text-slate-600 outline-none">
+             <input type="text" id="editCodigo" readonly class="w-full p-2 bg-slate-200 border border-slate-300 rounded-xl font-bold text-slate-600 outline-none cursor-not-allowed">
            </div>
            <div>
              <label class="block font-semibold text-slate-700 mb-1">Turno (Col B)</label>
@@ -381,7 +381,7 @@
    }
  }
 
- // --- CARGA DE LOS 17 CAMPOS EN EL MODAL DE EDICIÓN ---
+ // --- MODAL DE EDICIÓN EXCLUSIVO PARA REGISTROS PREVIAMENTE INGRESADOS POR CADA ÁREA ---
  function editarExpediente(codigo) {
    if (!codigo || codigo === '-') {
      alert("No se pudo obtener el identificador para edición.");
@@ -396,7 +396,6 @@
      return;
    }
 
-   // Llenado de los 17 campos (A-Q)
    document.getElementById('editCodigo').value = itemObj.codigo || '';
    document.getElementById('editTurno').value = itemObj.turno || '';
    document.getElementById('editEspecialista').value = itemObj.especialista || '';
@@ -458,7 +457,7 @@
        if (respuesta.success) {
          alert("✅ " + respuesta.mensaje);
        } else {
-         alert("⚠️️ " + respuesta.mensaje);
+         alert("⚠️ " + respuesta.mensaje);
        }
        obtenerTodosLosExpedientes();
      })
