@@ -81,15 +81,15 @@
 
         <!-- PESTAÑA 1: TRAZABILIDAD 360° -->
         <section id="secTrazabilidad" class="tab-content space-y-6">
-            <!-- Buscador Integrado -->
+            <!-- Buscador Integrado con Apellidos -->
             <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200">
                 <h3 class="text-base font-bold text-slate-800 mb-2 flex items-center gap-2">
                     <span>🔎</span> CONSULTA DE TRAZABILIDAD TRANSVERSAL
                 </h3>
-                <p class="text-xs text-slate-500 mb-4">Ingrese la Hoja de Trámite, N° de Expediente o DNI del administrado para revisar el estado en las tres especialidades.</p>
+                <p class="text-xs text-slate-500 mb-4">Ingrese Apellidos, DNI, N° de Expediente o Hoja de Trámite del administrado para revisar su estado en las tres especialidades.</p>
                 
                 <div class="flex flex-col md:flex-row gap-3">
-                    <input type="text" id="busquedaInput" placeholder="Ejemplo: 102030, 501234 o 10293847..." class="flex-1 p-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none uppercase font-mono">
+                    <input type="text" id="busquedaInput" placeholder="Ejemplo: FLORES SÁNCHEZ, 102030, 501234 o 10293847..." class="flex-1 p-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none uppercase font-mono">
                     <button onclick="ejecutarConsulta360()" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-6 py-3 rounded-lg text-sm shadow-md transition-all flex items-center justify-center gap-2">
                         <span>⚡</span> CONSULTAR EXPEDIENTE
                     </button>
@@ -205,7 +205,7 @@
 
     <!-- LOGICA JAVASCRIPT -->
     <script>
-        // Datos de simulación para pruebas de trazabilidad de los 3 casos ingresados
+        // Datos de simulación para pruebas de trazabilidad de los casos ingresados
         const dbLegal = [
             { dni: "10293847", expediente: "501234", hojaTramite: "102030", nombres: "ROSA MARIA", apellidos: "FLORES SÁNCHEZ", especialista: "EQUIPO LEGAL 1", materia: "VIOLENCIA FAMILIAR", estado: "3. DICTAMEN EMITIDO", fecha: "29/09/2026", proveido: "SE REVISÓ EL EXPEDIENTE JUDICIAL. SE EMITE DICTAMEN LEGAL N° 045-2026." },
             { dni: "43526170", expediente: "501235", hojaTramite: "102031", nombres: "JUAN CARLOS", apellidos: "MAMANI CHURA", especialista: "EQUIPO LEGAL 2", materia: "TENENCIA Y CUSTODIA", estado: "2. EN EVALUACIÓN", fecha: "29/09/2026", proveido: "OBSERVACIÓN EN LA DOCUMENTACIÓN PRESENTADA." },
@@ -260,20 +260,27 @@
             }
         }
 
-        // Ejecutar consulta cruzada
+        // Ejecutar consulta cruzada por DNI, Expediente, Hoja de Trámite o APELLIDOS
         function ejecutarConsulta360() {
-            const query = document.getElementById('busquedaInput').value.trim();
+            const query = document.getElementById('busquedaInput').value.trim().toUpperCase();
             if(!query) {
-                alert("Ingrese un parámetro de búsqueda (DNI, Expediente o HT).");
+                alert("Ingrese un parámetro de búsqueda (Apellidos, DNI, Expediente o HT).");
                 return;
             }
 
-            const regLegal = dbLegal.find(r => r.dni === query || r.expediente === query || r.hojaTramite === query);
-            const regPsico = dbPsicologia.find(r => r.dni === query || r.expediente === query || r.hojaTramite === query);
-            const regSocial = dbSocial.find(r => r.dni === query || r.expediente === query || r.hojaTramite === query);
+            // Función evaluadora que compara DNI, expediente, HT o si el apellido coincide
+            const coincide = (r) => {
+                const queryClean = query.normalize("NFD").replace(/[\u0300-\u06ff]/g, "");
+                const apellClean = (r.apellidos || "").toUpperCase().normalize("NFD").replace(/[\u0300-\u06ff]/g, "");
+                return r.dni === query || r.expediente === query || r.hojaTramite === query || apellClean.includes(queryClean);
+            };
+
+            const regLegal = dbLegal.find(coincide);
+            const regPsico = dbPsicologia.find(coincide);
+            const regSocial = dbSocial.find(coincide);
 
             if(!regLegal && !regPsico && !regSocial) {
-                alert("No se encontró información registrada para el término ingresado.");
+                alert("No se encontró información registrada para la búsqueda ingresada.");
                 document.getElementById('resultado360').classList.add('hidden');
                 return;
             }
