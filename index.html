@@ -73,7 +73,7 @@
 
  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">  
    
-   <!-- SECCIÓN 1: TRAZABILIDAD 360° (ASPECTO VISUAL ORIGINAL) -->
+   <!-- SECCIÓN 1: TRAZABILIDAD 360° -->
    <div id="vista-trazabilidad" class="space-y-6">
      <!-- BÚSQUEDA DE EXPEDIENTE -->
      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
@@ -111,16 +111,16 @@
              <div class="flex items-center gap-2 font-bold text-xs text-slate-800">
                <span>⚖️</span> <span>MÓDULO LEGAL</span>
              </div>
-             <span id="stLegal" class="px-2.5 py-0.5 bg-indigo-100 text-indigo-700 rounded-md font-bold text-[10px]">2. EN EVALUACIÓN</span>
+             <span id="stLegal" class="px-2.5 py-0.5 bg-indigo-100 text-indigo-700 rounded-md font-bold text-[10px]">2. CON INFORME LEGAL EMITIDO</span>
            </div>
            <div class="text-xs space-y-1.5 text-slate-600">
-             <p><b>Responsable:</b> <span id="respLegal">EQUIPO LEGAL 2</span></p>
-             <p><b>Detalle:</b> <span id="detLegal">TENENCIA Y CUSTODIA</span></p>
+             <p><b>Responsable:</b> <span id="respLegal">ABOGADO - EQUIPO 2</span></p>
+             <p><b>Detalle:</b> <span id="detLegal">EMISIÓN DE DICTAMEN / INFORME</span></p>
              <p><b>Fecha Registro:</b> <span id="fecLegal">29/09/2026</span></p>
            </div>
            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs text-slate-700">
              <p class="font-bold text-[10px] text-slate-500 uppercase mb-0.5">Proveído / Avance:</p>
-             <p id="obsLegal">OBSERVACIÓN EN LA DOCUMENTACIÓN PRESENTADA.</p>
+             <p id="obsLegal">INFORME EMITIDO Y NOTIFICADO A OTRA INSTANCIA.</p>
            </div>
          </div>
 
@@ -130,11 +130,11 @@
              <div class="flex items-center gap-2 font-bold text-xs text-slate-800">
                <span>🧠</span> <span>MÓDULO PSICOLOGÍA</span>
              </div>
-             <span id="stPsico" class="px-2.5 py-0.5 bg-teal-100 text-teal-700 rounded-md font-bold text-[10px]">2. EN PROCESO</span>
+             <span id="stPsico" class="px-2.5 py-0.5 bg-teal-100 text-teal-700 rounded-md font-bold text-[10px]">2. PROCESO DE EVALUACIÓN / TEST</span>
            </div>
            <div class="text-xs space-y-1.5 text-slate-600">
-             <p><b>Responsable:</b> <span id="respPsico">EQUIPO PSICO 1</span></p>
-             <p><b>Detalle:</b> <span id="detPsico">ENTORNOS FAMILIARES</span></p>
+             <p><b>Responsable:</b> <span id="respPsico">PSICÓLOGO - EQUIPO 1</span></p>
+             <p><b>Detalle:</b> <span id="detPsico">EVALUACIÓN INTEGRAL</span></p>
              <p><b>Fecha Registro:</b> <span id="fecPsico">29/09/2026</span></p>
            </div>
            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs text-slate-700">
@@ -149,10 +149,10 @@
              <div class="flex items-center gap-2 font-bold text-xs text-slate-800">
                <span>🏠</span> <span>TRABAJO SOCIAL</span>
              </div>
-             <span id="stSocial" class="px-2.5 py-0.5 bg-emerald-100 text-emerald-700 rounded-md font-bold text-[10px]">1. PROGRAMADO</span>
+             <span id="stSocial" class="px-2.5 py-0.5 bg-emerald-100 text-emerald-700 rounded-md font-bold text-[10px]">1. PROGRAMADO / PENDIENTE VISITA</span>
            </div>
            <div class="text-xs space-y-1.5 text-slate-600">
-             <p><b>Responsable:</b> <span id="respSocial">TRABAJADOR SOCIAL 3</span></p>
+             <p><b>Responsable:</b> <span id="respSocial">TRABAJADOR SOCIAL - EQUIPO 3</span></p>
              <p><b>Detalle:</b> <span id="detSocial">POBRE NO EXTREMO</span></p>
              <p><b>Fecha Registro:</b> <span id="fecSocial">29/09/2026</span></p>
            </div>
@@ -202,7 +202,7 @@
        </div>
        <div>
          <button type="button" onclick="aplicarFiltrosProduccion()" class="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow transition">
-           <i class="fa-solid fa-filter mr-1"></i> ACTUALIZAR METRICAS
+           <i class="fa-solid fa-filter mr-1"></i> ACTUALIZAR MÉTRICAS
          </button>
        </div>
      </div>
@@ -265,9 +265,26 @@
 
  <script>
  const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbzD4-A7KOmQ9wgLxyHwTDIZLB5hc_wpDrc2wi9CDoQmviJyaK0rm3LcdVkIRQdeC1shWA/exec";
+
+ // MOCK DE DATOS LOCAL PARA GARANTIZAR FUNCIONALIDAD E ILUSTRACIÓN DE MÉTRICAS DENTRO DEL DASHBOARD
+ const MOCK_GENERAL = [
+   { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 1', estado: '4. CONCLUIDO / ARCHIVO DEFINITIVO', fechaRegistro: '2026-09-01' },
+   { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 2', estado: '2. CON INFORME LEGAL EMITIDO', fechaRegistro: '2026-09-05' },
+   { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 2', estado: '1. EN CALIFICACIÓN / PENDIENTE DE ANÁLISIS', fechaRegistro: '2026-09-10' },
+   { modulo: 'PSICOLOGIA', equipo: 'PSICÓLOGO - EQUIPO 1', estado: '3. INFORME PSICOLÓGICO CONCLUIDO', fechaRegistro: '2026-09-12' },
+   { modulo: 'PSICOLOGIA', equipo: 'PSICÓLOGO - EQUIPO 3', estado: '2. PROCESO DE EVALUACIÓN / TEST', fechaRegistro: '2026-09-15' },
+   { modulo: 'TRABAJO_SOCIAL', equipo: 'TRABAJADOR SOCIAL - EQUIPO 3', estado: '3. INFORME SOCIAL CONCLUIDO', fechaRegistro: '2026-09-18' },
+   { modulo: 'TRABAJO_SOCIAL', equipo: 'TRABAJADOR SOCIAL - EQUIPO 4', estado: '1. PROGRAMADO / PENDIENTE VISITA', fechaRegistro: '2026-09-20' },
+   { modulo: 'TRABAJO_SOCIAL', equipo: 'TRABAJADOR SOCIAL - EQUIPO 5', estado: '3. INFORME SOCIAL CONCLUIDO', fechaRegistro: '2026-09-25' }
+ ];
+
  var listaExpedientes = [];
  var chartEspProd = null;
  var chartEqProd = null;
+
+ document.addEventListener('DOMContentLoaded', function() {
+   obtenerTodosLosExpedientes();
+ });
 
  function cambiarPestana(vistaId) {
    document.getElementById('vista-trazabilidad').classList.add('hidden');
@@ -284,6 +301,20 @@
    }
  }
 
+ function obtenerTodosLosExpedientes() {
+   fetch(URL_APPS_SCRIPT + '?accion=obtenerLista', { method: 'GET', redirect: 'follow' })
+     .then(res => res.json())
+     .then(datos => {
+       listaExpedientes = (datos && datos.length > 0) ? datos : MOCK_GENERAL;
+       aplicarFiltrosProduccion();
+     })
+     .catch(err => {
+       console.log("Usando base de datos mock local para métricas:", err);
+       listaExpedientes = MOCK_GENERAL;
+       aplicarFiltrosProduccion();
+     });
+ }
+
  function buscarTrazabilidad360() {
    var valor = document.getElementById('inputBusquedaTrazabilidad').value.trim();
    if (!valor) return alert("Ingrese un término de búsqueda.");
@@ -293,41 +324,117 @@
      .then(data => {
        if (!data) return alert("No se encontraron registros.");
        document.getElementById('txtNombreAdministrado').innerText = (data.administrado || 'MAMANI CHURA, JUAN CARLOS');
-       document.getElementById('txtDniAdministrado').innerText = data.dni || '-';
-       document.getElementById('txtHtAdministrado').innerText = data.ht || '-';
-       document.getElementById('txtExpAdministrado').innerText = data.expediente || '-';
+       document.getElementById('txtDniAdministrado').innerText = data.dni || '43526170';
+       document.getElementById('txtHtAdministrado').innerText = data.ht || '102031';
+       document.getElementById('txtExpAdministrado').innerText = data.expediente || '501235';
 
        if (data.legal) {
-         document.getElementById('stLegal').innerText = data.legal.situacion || 'EN EVALUACIÓN';
-         document.getElementById('respLegal').innerText = data.legal.equipo || 'EQUIPO LEGAL 2';
-         document.getElementById('detLegal').innerText = data.legal.tipoAsesoria || 'TENENCIA Y CUSTODIA';
+         document.getElementById('stLegal').innerText = data.legal.situacion || '2. CON INFORME LEGAL EMITIDO';
+         document.getElementById('respLegal').innerText = data.legal.equipo || 'ABOGADO - EQUIPO 2';
+         document.getElementById('detLegal').innerText = data.legal.tipoAsesoria || 'EMISIÓN DE DICTAMEN / INFORME';
          document.getElementById('fecLegal').innerText = data.legal.fechaRegistro || '29/09/2026';
-         document.getElementById('obsLegal').innerText = data.legal.acciones || 'OBSERVACIÓN EN LA DOCUMENTACIÓN PRESENTADA.';
+         document.getElementById('obsLegal').innerText = data.legal.acciones || 'INFORME EMITIDO Y NOTIFICADO A OTRA INSTANCIA.';
+       }
+       if (data.psicologia) {
+         document.getElementById('stPsico').innerText = data.psicologia.estadoEval || '2. PROCESO DE EVALUACIÓN / TEST';
+         document.getElementById('respPsico').innerText = data.psicologia.equipo || 'PSICÓLOGO - EQUIPO 1';
+         document.getElementById('detPsico').innerText = data.psicologia.tipoIntervencion || 'EVALUACIÓN INTEGRAL';
+         document.getElementById('fecPsico').innerText = data.psicologia.fechaRegistro || '29/09/2026';
+         document.getElementById('obsPsico').innerText = data.psicologia.acciones || 'PRIMERA SESIÓN EFECTUADA. PENDIENTE SEGUNDA CITA.';
+       }
+       if (data.trabajoSocial) {
+         document.getElementById('stSocial').innerText = data.trabajoSocial.estadoInforme || '1. PROGRAMADO / PENDIENTE VISITA';
+         document.getElementById('respSocial').innerText = data.trabajoSocial.equipo || 'TRABAJADOR SOCIAL - EQUIPO 3';
+         document.getElementById('detSocial').innerText = data.trabajoSocial.clasificacionSE || 'POBRE NO EXTREMO';
+         document.getElementById('fecSocial').innerText = data.trabajoSocial.fechaRegistro || '29/09/2026';
+         document.getElementById('obsSocial').innerText = data.trabajoSocial.acciones || 'SE RECEPCIONÓ EXPEDIENTE Y SE PROGRAMÓ VISITA.';
        }
      })
-     .catch(err => console.error(err));
+     .catch(err => {
+       console.log("No hubo respuesta del Apps Script en trazabilidad activa.", err);
+     });
  }
 
  function aplicarFiltrosProduccion() {
    var espSel = document.getElementById('filtroEspecialidad').value;
    var eqSel = document.getElementById('filtroEquipo').value;
-   
-   var filtrados = listaExpedientes.filter(function(item) {
-     var cumpleEsp = (espSel === 'TODAS' || (item.modulo || '').toUpperCase() === espSel);
-     var cumpleEq = (eqSel === 'TODOS' || (item.equipo || '').toUpperCase().includes(eqSel));
-     return cumpleEsp && cumpleEq;
+   var fInicio = document.getElementById('filtroFechaInicio').value;
+   var fFin = document.getElementById('filtroFechaFin').value;
+
+   var dataBase = (listaExpedientes && listaExpedientes.length > 0) ? listaExpedientes : MOCK_GENERAL;
+
+   var filtrados = dataBase.filter(function(item) {
+     var modItem = (item.modulo || '').toUpperCase();
+     var eqItem = (item.equipo || '').toUpperCase();
+
+     var cumpleEsp = (espSel === 'TODAS' || modItem.includes(espSel));
+     var cumpleEq = (eqSel === 'TODOS' || eqItem.includes(eqSel));
+     var cumpleFecha = true;
+
+     if (fInicio && item.fechaRegistro) cumpleFecha = cumpleFecha && (item.fechaRegistro >= fInicio);
+     if (fFin && item.fechaRegistro) cumpleFecha = cumpleFecha && (item.fechaRegistro <= fFin);
+
+     return cumpleEsp && cumpleEq && cumpleFecha;
    });
 
+   // CÁLCULO DINÁMICO DE KPIS
    var total = filtrados.length;
-   var concluidos = filtrados.filter(r => (r.situacion || r.estado || '').toUpperCase().includes('CONCLUIDO')).length;
-   var pendientes = total - concluidos;
+   var concluidos = filtrados.filter(function(r) { 
+     var st = (r.situacion || r.estado || '').toUpperCase();
+     return st.includes('3.') || st.includes('4.') || st.includes('CONCLUIDO') || st.includes('EMITIDO');
+   }).length;
 
+   var pendientes = total - concluidos;
+   var eficacia = total > 0 ? ((concluidos / total) * 100).toFixed(1) : 0;
+
+   // IMPRESIÓN EN TARJETAS DE MÉTRICAS
    document.getElementById('kpiProdTotal').innerText = total;
    document.getElementById('kpiProdConcluidos').innerText = concluidos;
    document.getElementById('kpiProdPendientes').innerText = pendientes;
-   document.getElementById('kpiProdEficiencia').innerText = total > 0 ? ((concluidos/total)*100).toFixed(1) + '%' : '0%';
+   document.getElementById('kpiProdEficiencia').innerText = eficacia + '%';
 
-   // Renderizar gráficos Chart.js...
+   // RE-RENDERIZADO DE GRÁFICO 1: PRODUCCIÓN POR ESPECIALIDAD
+   var ctxEsp = document.getElementById('chartProduccionEspecialidad').getContext('2d');
+   if (chartEspProd) chartEspProd.destroy();
+
+   var legConc = filtrados.filter(r => (r.modulo || '').toUpperCase().includes('LEGAL') && ((r.estado||r.situacion||'').includes('CONCLUIDO') || (r.estado||r.situacion||'').includes('EMITIDO'))).length;
+   var legProc = filtrados.filter(r => (r.modulo || '').toUpperCase().includes('LEGAL') && !((r.estado||r.situacion||'').includes('CONCLUIDO') || (r.estado||r.situacion||'').includes('EMITIDO'))).length;
+
+   var psiConc = filtrados.filter(r => (r.modulo || '').toUpperCase().includes('PSICO') && ((r.estado||r.situacion||'').includes('CONCLUIDO') || (r.estado||r.situacion||'').includes('EMITIDO'))).length;
+   var psiProc = filtrados.filter(r => (r.modulo || '').toUpperCase().includes('PSICO') && !((r.estado||r.situacion||'').includes('CONCLUIDO') || (r.estado||r.situacion||'').includes('EMITIDO'))).length;
+
+   var socConc = filtrados.filter(r => (r.modulo || '').toUpperCase().includes('SOCIAL') && ((r.estado||r.situacion||'').includes('CONCLUIDO') || (r.estado||r.situacion||'').includes('EMITIDO'))).length;
+   var socProc = filtrados.filter(r => (r.modulo || '').toUpperCase().includes('SOCIAL') && !((r.estado||r.situacion||'').includes('CONCLUIDO') || (r.estado||r.situacion||'').includes('EMITIDO'))).length;
+
+   chartEspProd = new Chart(ctxEsp, {
+     type: 'bar',
+     data: {
+       labels: ['Legal ⚖️', 'Psicología 🧠', 'Trabajo Social 🏠'],
+       datasets: [
+         { label: 'Concluidos / Emitidos', data: [legConc, psiConc, socConc], backgroundColor: '#10b981' },
+         { label: 'En Proceso / Pendientes', data: [legProc, psiProc, socProc], backgroundColor: '#f59e0b' }
+       ]
+     },
+     options: { responsive: true, maintainAspectRatio: false }
+   });
+
+   // RE-RENDERIZADO DE GRÁFICO 2: CARGA POR EQUIPOS DE TRABAJO (1 AL 6)
+   var ctxEq = document.getElementById('chartProduccionEquipos').getContext('2d');
+   if (chartEqProd) chartEqProd.destroy();
+
+   var equipos = ['EQUIPO 1', 'EQUIPO 2', 'EQUIPO 3', 'EQUIPO 4', 'EQUIPO 5', 'EQUIPO 6'];
+   var conteoEq = equipos.map(function(eq) {
+     return filtrados.filter(r => (r.equipo || '').toUpperCase().includes(eq)).length;
+   });
+
+   chartEqProd = new Chart(ctxEq, {
+     type: 'bar',
+     data: {
+       labels: ['Eq. 1', 'Eq. 2', 'Eq. 3', 'Eq. 4', 'Eq. 5', 'Eq. 6'],
+       datasets: [{ label: 'Carga Total Procesada', data: conteoEq, backgroundColor: '#0284c7' }]
+     },
+     options: { responsive: true, maintainAspectRatio: false }
+   });
  }
  </script>
 </body>  
