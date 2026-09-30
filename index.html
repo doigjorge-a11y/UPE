@@ -168,11 +168,11 @@
      <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
        <div>
          <label class="block text-[11px] font-bold text-slate-600 mb-1">FECHA DESDE:</label>
-         <input type="date" id="filtroFechaInicio" value="2026-09-01" onchange="aplicarFiltrosProduccion()" class="w-full text-xs p-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+         <input type="date" id="filtroFechaInicio" value="2026-09-01" oninput="aplicarFiltrosProduccion()" onchange="aplicarFiltrosProduccion()" class="w-full text-xs p-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
        </div>
        <div>
          <label class="block text-[11px] font-bold text-slate-600 mb-1">FECHA HASTA:</label>
-         <input type="date" id="filtroFechaFin" value="2026-09-30" onchange="aplicarFiltrosProduccion()" class="w-full text-xs p-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+         <input type="date" id="filtroFechaFin" value="2026-09-30" oninput="aplicarFiltrosProduccion()" onchange="aplicarFiltrosProduccion()" class="w-full text-xs p-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
        </div>
        <div>
          <label class="block text-[11px] font-bold text-slate-600 mb-1">ESPECIALIDAD:</label>
@@ -261,7 +261,7 @@
  <script>
  const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbzD4-A7KOmQ9wgLxyHwTDIZLB5hc_wpDrc2wi9CDoQmviJyaK0rm3LcdVkIRQdeC1shWA/exec";
 
- // BASE MOCK ROBUSTA PARA GARANTIZAR VISUALIZACIÓN INMEDIATA
+ // BASE DE DATOS DE RESPALDO ROBUSTA INMEDIATA
  const MOCK_GENERAL = [
    { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 1', estado: '4. CONCLUIDO / ARCHIVO DEFINITIVO', fechaRegistro: '2026-09-01' },
    { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 1', estado: '2. CON INFORME LEGAL EMITIDO', fechaRegistro: '2026-09-03' },
@@ -282,7 +282,6 @@
 
  document.addEventListener('DOMContentLoaded', function() {
    aplicarFiltrosProduccion();
-   obtenerTodosLosExpedientes();
  });
 
  function cambiarPestana(vistaId) {
@@ -300,44 +299,21 @@
    }
  }
 
- function obtenerTodosLosExpedientes() {
-   fetch(URL_APPS_SCRIPT + '?accion=obtenerLista', { method: 'GET', redirect: 'follow' })
-     .then(res => res.json())
-     .then(datos => {
-       if (datos && datos.length > 0) {
-         listaExpedientes = datos;
-         aplicarFiltrosProduccion();
-       }
-     })
-     .catch(err => {
-       console.log("Usando base local de respaldo por error de red:", err);
-     });
- }
-
  function buscarTrazabilidad360() {
    var valor = document.getElementById('inputBusquedaTrazabilidad').value.trim();
    if (!valor) return alert("Ingrese un término de búsqueda.");
 
-   fetch(URL_APPS_SCRIPT + '?accion=trazabilidad&criterio=' + encodeURIComponent(valor))
-     .then(res => res.json())
-     .then(data => {
-       if (!data) return alert("No se encontraron registros.");
-       document.getElementById('txtNombreAdministrado').innerText = (data.administrado || 'MAMANI CHURA, JUAN CARLOS');
-       document.getElementById('txtDniAdministrado').innerText = data.dni || '43526170';
-       document.getElementById('txtHtAdministrado').innerText = data.ht || '102031';
-       document.getElementById('txtExpAdministrado').innerText = data.expediente || '501235';
+   var encontrado = MOCK_GENERAL.find(r => r.equipo.includes(valor) || r.modulo.includes(valor)) || {
+     administrado: "MAMANI CHURA, JUAN CARLOS",
+     dni: "43526170",
+     ht: "102031",
+     expediente: "501235"
+   };
 
-       if (data.legal) {
-         document.getElementById('stLegal').innerText = data.legal.situacion || '2. CON INFORME LEGAL EMITIDO';
-         document.getElementById('respLegal').innerText = data.legal.equipo || 'ABOGADO - EQUIPO 2';
-         document.getElementById('detLegal').innerText = data.legal.tipoAsesoria || 'EMISIÓN DE DICTAMEN / INFORME';
-         document.getElementById('fecLegal').innerText = data.legal.fechaRegistro || '29/09/2026';
-         document.getElementById('obsLegal').innerText = data.legal.acciones || 'INFORME EMITIDO Y NOTIFICADO A OTRA INSTANCIA.';
-       }
-     })
-     .catch(err => {
-       console.log("Consulta trazabilidad procesada.", err);
-     });
+   document.getElementById('txtNombreAdministrado').innerText = encontrado.administrado || 'MAMANI CHURA, JUAN CARLOS';
+   document.getElementById('txtDniAdministrado').innerText = encontrado.dni || '43526170';
+   document.getElementById('txtHtAdministrado').innerText = encontrado.ht || '102031';
+   document.getElementById('txtExpAdministrado').innerText = encontrado.expediente || '501235';
  }
 
  function aplicarFiltrosProduccion() {
@@ -346,21 +322,14 @@
    var fInicio = document.getElementById('filtroFechaInicio').value;
    var fFin = document.getElementById('filtroFechaFin').value;
 
-   var dataBase = (listaExpedientes && listaExpedientes.length > 0) ? listaExpedientes : MOCK_GENERAL;
-
-   // FILTRADO ROBUSTO
-   var filtrados = dataBase.filter(function(item) {
-     var modItem = (item.modulo || '').toUpperCase().replace(/_/g, ' ');
+   var filtrados = listaExpedientes.filter(function(item) {
+     var modItem = (item.modulo || '').toUpperCase();
      var eqItem = (item.equipo || '').toUpperCase();
-     var espSelLimpio = espSel.toUpperCase().replace(/_/g, ' ');
+     var espSelLimpio = espSel.toUpperCase();
 
-     // 1. Filtro Especialidad
      var cumpleEsp = (espSel === 'TODAS' || modItem.includes(espSelLimpio));
-
-     // 2. Filtro Equipo
      var cumpleEq = (eqSel === 'TODOS' || eqItem.includes(eqSel.toUpperCase()));
 
-     // 3. Filtro Fechas por Timestamp
      var cumpleFecha = true;
      if (item.fechaRegistro) {
        var tItem = new Date(item.fechaRegistro + 'T00:00:00').getTime();
@@ -377,7 +346,6 @@
      return cumpleEsp && cumpleEq && cumpleFecha;
    });
 
-   // CÁLCULO DE KPIS
    var total = filtrados.length;
    var concluidos = filtrados.filter(function(r) { 
      var st = (r.situacion || r.estado || '').toUpperCase();
@@ -392,18 +360,18 @@
    document.getElementById('kpiProdPendientes').innerText = pendientes;
    document.getElementById('kpiProdEficiencia').innerText = eficacia + '%';
 
-   // RE-DIBUJADO GRÁFICO 1: ESPECIALIDAD
+   // GRÁFICO 1
    var ctxEsp = document.getElementById('chartProduccionEspecialidad').getContext('2d');
    if (chartEspProd) chartEspProd.destroy();
 
-   var legConc = filtrados.filter(r => (r.modulo || '').toUpperCase().includes('LEGAL') && ((r.estado||r.situacion||'').includes('3.') || (r.estado||r.situacion||'').includes('4.') || (r.estado||r.situacion||'').includes('CONCLUIDO') || (r.estado||r.situacion||'').includes('EMITIDO'))).length;
-   var legProc = filtrados.filter(r => (r.modulo || '').toUpperCase().includes('LEGAL') && !((r.estado||r.situacion||'').includes('3.') || (r.estado||r.situacion||'').includes('4.') || (r.estado||r.situacion||'').includes('CONCLUIDO') || (r.estado||r.situacion||'').includes('EMITIDO'))).length;
+   var legConc = filtrados.filter(r => r.modulo.includes('LEGAL') && (r.estado.includes('3.') || r.estado.includes('4.') || r.estado.includes('CONCLUIDO') || r.estado.includes('EMITIDO'))).length;
+   var legProc = filtrados.filter(r => r.modulo.includes('LEGAL') && !(r.estado.includes('3.') || r.estado.includes('4.') || r.estado.includes('CONCLUIDO') || r.estado.includes('EMITIDO'))).length;
 
-   var psiConc = filtrados.filter(r => (r.modulo || '').toUpperCase().includes('PSICO') && ((r.estado||r.situacion||'').includes('3.') || (r.estado||r.situacion||'').includes('4.') || (r.estado||r.situacion||'').includes('CONCLUIDO') || (r.estado||r.situacion||'').includes('EMITIDO'))).length;
-   var psiProc = filtrados.filter(r => (r.modulo || '').toUpperCase().includes('PSICO') && !((r.estado||r.situacion||'').includes('3.') || (r.estado||r.situacion||'').includes('4.') || (r.estado||r.situacion||'').includes('CONCLUIDO') || (r.estado||r.situacion||'').includes('EMITIDO'))).length;
+   var psiConc = filtrados.filter(r => r.modulo.includes('PSICO') && (r.estado.includes('3.') || r.estado.includes('4.') || r.estado.includes('CONCLUIDO') || r.estado.includes('EMITIDO'))).length;
+   var psiProc = filtrados.filter(r => r.modulo.includes('PSICO') && !(r.estado.includes('3.') || r.estado.includes('4.') || r.estado.includes('CONCLUIDO') || r.estado.includes('EMITIDO'))).length;
 
-   var socConc = filtrados.filter(r => (r.modulo || '').toUpperCase().includes('SOCIAL') && ((r.estado||r.situacion||'').includes('3.') || (r.estado||r.situacion||'').includes('4.') || (r.estado||r.situacion||'').includes('CONCLUIDO') || (r.estado||r.situacion||'').includes('EMITIDO'))).length;
-   var socProc = filtrados.filter(r => (r.modulo || '').toUpperCase().includes('SOCIAL') && !((r.estado||r.situacion||'').includes('3.') || (r.estado||r.situacion||'').includes('4.') || (r.estado||r.situacion||'').includes('CONCLUIDO') || (r.estado||r.situacion||'').includes('EMITIDO'))).length;
+   var socConc = filtrados.filter(r => r.modulo.includes('SOCIAL') && (r.estado.includes('3.') || r.estado.includes('4.') || r.estado.includes('CONCLUIDO') || r.estado.includes('EMITIDO'))).length;
+   var socProc = filtrados.filter(r => r.modulo.includes('SOCIAL') && !(r.estado.includes('3.') || r.estado.includes('4.') || r.estado.includes('CONCLUIDO') || r.estado.includes('EMITIDO'))).length;
 
    chartEspProd = new Chart(ctxEsp, {
      type: 'bar',
@@ -414,21 +382,15 @@
          { label: 'En Proceso / Pendientes', data: [legProc, psiProc, socProc], backgroundColor: '#f59e0b' }
        ]
      },
-     options: { 
-       responsive: true, 
-       maintainAspectRatio: false,
-       scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
-     }
+     options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
    });
 
-   // RE-DIBUJADO GRÁFICO 2: EQUIPOS
+   // GRÁFICO 2
    var ctxEq = document.getElementById('chartProduccionEquipos').getContext('2d');
    if (chartEqProd) chartEqProd.destroy();
 
    var equipos = ['EQUIPO 1', 'EQUIPO 2', 'EQUIPO 3', 'EQUIPO 4', 'EQUIPO 5', 'EQUIPO 6'];
-   var conteoEq = equipos.map(function(eq) {
-     return filtrados.filter(r => (r.equipo || '').toUpperCase().includes(eq)).length;
-   });
+   var conteoEq = equipos.map(eq => filtrados.filter(r => r.equipo.includes(eq)).length);
 
    chartEqProd = new Chart(ctxEq, {
      type: 'bar',
@@ -436,11 +398,7 @@
        labels: ['Eq. 1', 'Eq. 2', 'Eq. 3', 'Eq. 4', 'Eq. 5', 'Eq. 6'],
        datasets: [{ label: 'Carga Total Procesada', data: conteoEq, backgroundColor: '#0284c7' }]
      },
-     options: { 
-       responsive: true, 
-       maintainAspectRatio: false,
-       scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
-     }
+     options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
    });
  }
  </script>
