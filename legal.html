@@ -1,0 +1,431 @@
+<!DOCTYPE html>  
+<html lang="es" class="h-full bg-slate-50">  
+<head>  
+ <meta charset="UTF-8">  
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+ <title>Módulo de Registro y Gestión - Área Legal</title>  
+  
+ <!-- Librerías CSS y JS -->  
+ <script src="https://cdn.tailwindcss.com"></script>  
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">  
+  
+ <script>  
+ tailwind.config = {  
+   theme: {  
+     extend: {  
+       colors: {  
+         brand: {  
+           50: '#f0f7ff',  
+           100: '#e0effe',  
+           500: '#0284c7',  
+           700: '#0369a1',  
+           900: '#0c4a6e',  
+         }  
+       }  
+     }  
+   }  
+ }  
+ </script>  
+ <style>  
+ .glass-header {  
+   background: rgba(12, 74, 110, 0.95);  
+   backdrop-filter: blur(8px);  
+ }  
+ .custom-scrollbar::-webkit-scrollbar {  
+   width: 6px;  
+   height: 6px;  
+ }  
+ .custom-scrollbar::-webkit-scrollbar-track {  
+   background: #f1f1f1;  
+ }  
+ .custom-scrollbar::-webkit-scrollbar-thumb {  
+   background: #cbd5e1;  
+   border-radius: 4px;  
+ }  
+ </style>  
+</head>  
+<body class="h-full flex flex-col font-sans text-slate-800 antialiased selection:bg-brand-500 selection:text-white">  
+
+ <!-- BANNER SUPERIOR CORPORATIVO -->  
+ <header class="glass-header text-white sticky top-0 z-40 shadow-lg">  
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">  
+     <div class="flex items-center justify-between h-16">  
+       <div class="flex items-center space-x-3">  
+         <div class="p-2 bg-brand-500/20 border border-brand-500/30 rounded-xl flex items-center justify-center">  
+           <i class="fa-solid fa-gavel text-xl text-brand-100"></i>  
+         </div>  
+         <div>  
+           <h1 class="font-bold text-base sm:text-lg tracking-tight leading-none">Módulo Especialista - ÁREA LEGAL</h1>  
+           <p class="text-[11px] text-brand-100 opacity-80 mt-0.5">Ingreso y Seguimiento Exclusivo de Atenciones Legales</p>  
+         </div>  
+       </div>  
+       <div>
+         <button type="button" onclick="abrirModalNuevo()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center space-x-2">
+           <i class="fa-solid fa-plus"></i>
+           <span>NUEVO REGISTRO LEGAL</span>
+         </button>
+       </div>
+     </div>  
+   </div>  
+ </header>  
+
+ <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">  
+   
+   <!-- BÚSQUEDA -->
+   <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row gap-3 items-center justify-between">
+     <div class="relative w-full md:w-96">
+       <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+       <input type="text" id="inputBusqueda" placeholder="Buscar expediente legal, DNI o apellidos..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-brand-500 focus:bg-white outline-none transition-all">
+     </div>
+     <div class="flex items-center space-x-2 w-full md:w-auto justify-end">
+       <button type="button" onclick="ejecutarBusqueda()" class="px-4 py-2 bg-brand-700 hover:bg-brand-900 text-white font-semibold text-xs rounded-xl shadow transition-all">
+         BUSCAR
+       </button>
+       <button type="button" onclick="limpiarBusqueda()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold text-xs rounded-xl transition-all">
+         LIMPIAR
+       </button>
+     </div>
+   </div>
+
+   <!-- TABLA DE CASOS LEGALES (CON EDICIÓN ACTIVADA PARA EL ABOGADO) -->
+   <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+     <div class="overflow-x-auto custom-scrollbar">
+       <table class="w-full text-left border-collapse text-xs">
+         <thead>
+           <tr class="bg-slate-900 text-white font-bold tracking-wider uppercase text-[10px]">
+             <th class="p-3.5">CÓDIGO</th>
+             <th class="p-3.5">ESPECIALISTA / TURNO</th>
+             <th class="p-3.5">N° EXPEDIENTE</th>
+             <th class="p-3.5">HOJA TRÁMITE (HT)</th>
+             <th class="p-3.5">ADMINISTRADO</th>
+             <th class="p-3.5">DNI</th>
+             <th class="p-3.5">TIPO ASESORÍA</th>
+             <th class="p-3.5">ESTADO LEGAL</th>
+             <th class="p-3.5 text-center">ACCIONES</th>
+           </tr>
+         </thead>
+         <tbody id="tbodyExpedientes" class="divide-y divide-slate-100 text-slate-700">
+           <!-- Carga de datos dinámicos -->
+         </tbody>
+       </table>
+     </div>
+     <div class="p-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+       <span id="txtPaginacion">Cargando registros del área legal...</span>
+     </div>
+   </div>
+
+ </main>
+
+ <!-- MODAL DE REGISTRO / EDICIÓN LEGAL -->
+ <div id="modalFormulario" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-4 overflow-y-auto" style="display: none;">
+   <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full flex flex-col overflow-hidden border border-slate-200 max-h-[92vh]">
+     <div class="bg-slate-900 px-6 py-4 text-white flex items-center justify-between border-b border-slate-800">
+       <div class="flex items-center space-x-3">
+         <div class="p-2 bg-emerald-500/20 rounded-lg text-emerald-400">
+           <i class="fa-solid fa-gavel text-lg"></i>
+         </div>
+         <div>
+           <h3 id="modalTitulo" class="font-bold text-base leading-tight">Nuevo Registro Legal</h3>
+           <p class="text-xs text-slate-400">Formulario exclusivo para el especialista en Derecho</p>
+         </div>
+       </div>
+       <button type="button" onclick="cerrarModal()" class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+         <i class="fa-solid fa-xmark text-lg"></i>
+       </button>
+     </div>
+
+     <form id="formLegal" onsubmit="guardarRegistroLegal(event)" class="p-6 overflow-y-auto space-y-6 text-xs custom-scrollbar">
+       <input type="hidden" id="esEdicion" value="false">
+
+       <!-- SECCIÓN 1: DATOS DEL TRÁMITE -->
+       <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
+         <div class="font-bold text-xs uppercase text-brand-700 border-b pb-2 flex items-center space-x-2">
+           <i class="fa-solid fa-folder-open"></i>
+           <span>1. Datos del Trámite y Expediente Legal</span>
+         </div>
+         <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+           <div>
+             <label class="block font-semibold text-slate-700 mb-1">ID Código (Col A)</label>
+             <input type="text" id="regCodigo" placeholder="Autogenerado o Manual" class="w-full p-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500 font-bold">
+           </div>
+           <div>
+             <label class="block font-semibold text-slate-700 mb-1">Turno / Equipo (Col B)</label>
+             <input type="text" id="regTurno" required class="w-full p-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500">
+           </div>
+           <div>
+             <label class="block font-semibold text-slate-700 mb-1">Abogado Especialista (Col C)</label>
+             <input type="text" id="regEspecialista" required class="w-full p-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500">
+           </div>
+           <div>
+             <label class="block font-semibold text-slate-700 mb-1">N° Expediente (Col G)</label>
+             <input type="text" id="regExpediente" required class="w-full p-2 bg-white border border-slate-200 rounded-xl font-bold outline-none focus:ring-2 focus:ring-brand-500">
+           </div>
+           <div>
+             <label class="block font-semibold text-slate-700 mb-1">Hoja Trámite - HT (Col F)</label>
+             <input type="text" id="regHT" class="w-full p-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500">
+           </div>
+           <div>
+             <label class="block font-semibold text-slate-700 mb-1">Fecha Registro (Col D)</label>
+             <input type="date" id="regFechaRegistro" required class="w-full p-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500">
+           </div>
+           <div>
+             <label class="block font-semibold text-slate-700 mb-1">Fecha Ingreso (Col E)</label>
+             <input type="date" id="regFechaIngreso" class="w-full p-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500">
+           </div>
+           <div>
+             <label class="block font-semibold text-slate-700 mb-1">Folios (Col H)</label>
+             <input type="number" id="regFolios" value="1" class="w-full p-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500">
+           </div>
+         </div>
+       </div>
+
+       <!-- SECCIÓN 2: DATOS DEL CIUDADANO -->
+       <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
+         <div class="font-bold text-xs uppercase text-brand-700 border-b pb-2 flex items-center space-x-2">
+           <i class="fa-solid fa-user"></i>
+           <span>2. Identificación del Ciudadano / Administrado</span>
+         </div>
+         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+           <div>
+             <label class="block font-semibold text-slate-700 mb-1">Apellidos (Col I)</label>
+             <input type="text" id="regApellidos" required class="w-full p-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500">
+           </div>
+           <div>
+             <label class="block font-semibold text-slate-700 mb-1">Nombres (Col J)</label>
+             <input type="text" id="regNombres" required class="w-full p-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500">
+           </div>
+           <div>
+             <label class="block font-semibold text-slate-700 mb-1">DNI / Doc (Col L)</label>
+             <input type="text" id="regDNI" maxlength="12" required class="w-full p-2 bg-white border border-slate-200 rounded-xl font-bold outline-none focus:ring-2 focus:ring-brand-500">
+           </div>
+           <div>
+             <label class="block font-semibold text-slate-700 mb-1">Sexo (Col K)</label>
+             <select id="regSexo" class="w-full p-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500">
+               <option value="M">Femenino</option>
+               <option value="H">Masculino</option>
+             </select>
+           </div>
+           <div>
+             <label class="block font-semibold text-slate-700 mb-1">Fecha Nacimiento (Col M)</label>
+             <input type="date" id="regFechaNacimiento" class="w-full p-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500">
+           </div>
+           <div>
+             <label class="block font-semibold text-slate-700 mb-1">Edad (Col N)</label>
+             <input type="number" id="regEdad" class="w-full p-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500">
+           </div>
+           <div class="col-span-1 md:col-span-3">
+             <label class="block font-semibold text-slate-700 mb-1">Distrito Residencia (Col O)</label>
+             <input type="text" id="regDistrito" class="w-full p-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500">
+           </div>
+         </div>
+       </div>
+
+       <!-- SECCIÓN 3: EVALUACIÓN Y TIPO DE ASESORÍA -->
+       <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
+         <div class="font-bold text-xs uppercase text-brand-700 border-b pb-2 flex items-center space-x-2">
+           <i class="fa-solid fa-scale-balanced"></i>
+           <span>3. Situación Legal y Actuación</span>
+         </div>
+         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+           <div>
+             <label class="block font-semibold text-slate-700 mb-1">Estado Legal / Situación (Col P)</label>
+             <select id="regSituacion" class="w-full p-2 bg-white border border-slate-200 rounded-xl font-bold outline-none focus:ring-2 focus:ring-brand-500">
+               <option value="EN TRAMITE">EN TRAMITE</option>
+               <option value="OBSERVADO">OBSERVADO</option>
+               <option value="CONCLUIDO">CONCLUIDO</option>
+               <option value="PARA FIRMA">PARA FIRMA</option>
+               <option value="PARA REVISIÓN">PARA REVISIÓN</option>
+             </select>
+           </div>
+           <div>
+             <label class="block font-semibold text-slate-700 mb-1">Materia / Tipo Asesoría (Col Q)</label>
+             <input type="text" id="regAcciones" placeholder="Ej. Patrocinio, Asesoría en Alimentos, Tenencia, etc." required class="w-full p-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500 font-semibold">
+           </div>
+         </div>
+       </div>
+
+       <div class="pt-2 flex justify-end space-x-2">
+         <button type="button" onclick="cerrarModal()" class="px-5 py-2.5 bg-slate-100 text-slate-600 rounded-xl font-semibold hover:bg-slate-200 transition-all">Cancelar</button>
+         <button type="submit" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow transition-all">Guardar en Registro Legal</button>
+       </div>
+     </form>
+   </div>
+ </div>
+
+ <script class="notranslate">
+ const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbzD4-A7KOmQ9wgLxyHwTDIZLB5hc_wpDrc2wi9CDoQmviJyaK0rm3LcdVkIRQdeC1shWA/exec";
+
+ var listaExpedientes = [];
+
+ document.addEventListener('DOMContentLoaded', function() {
+   obtenerTodosLosExpedientes();
+   document.getElementById('regFechaRegistro').valueAsDate = new Date();
+ });
+
+ function obtenerTodosLosExpedientes() {
+   var tbody = document.getElementById('tbodyExpedientes');
+   tbody.innerHTML = '<tr><td colspan="9" class="p-6 text-center text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Cargando base de datos del Área Legal...</td></tr>';
+
+   fetch(URL_APPS_SCRIPT + '?accion=obtenerLista', {
+     method: 'GET',
+     redirect: 'follow'
+   })
+     .then(function(res) { return res.json(); })
+     .then(function(datos) {
+       listaExpedientes = datos || [];
+       cargarTabla(listaExpedientes);
+     })
+     .catch(function(err) {
+       tbody.innerHTML = '<tr><td colspan="9" class="p-6 text-center text-red-500">Error al consultar datos: ' + err.message + '</td></tr>';
+     });
+ }
+
+ function cargarTabla(datos) {
+   var tbody = document.getElementById('tbodyExpedientes');
+   var txtPaginacion = document.getElementById('txtPaginacion');
+   tbody.innerHTML = '';
+
+   if (!datos || datos.length === 0) {
+     tbody.innerHTML = '<tr><td colspan="9" class="p-6 text-center text-slate-400 italic">No hay atenciones legales registradas.</td></tr>';
+     txtPaginacion.innerText = '0 registros';
+     return;
+   }
+
+   datos.forEach(function(item) {
+     var tr = document.createElement('tr');
+     tr.className = 'hover:bg-slate-50 transition-all border-b border-slate-100';
+     
+     var idRef = item.codigo || item.expediente || item.ht;
+
+     tr.innerHTML = 
+       '<td class="p-3.5 font-bold text-brand-700">' + (item.codigo || '-') + '</td>' +
+       '<td class="p-3.5">' + (item.especialista || item.equipo || '-') + '</td>' +
+       '<td class="p-3.5 font-bold text-slate-900">' + (item.expediente || '-') + '</td>' +
+       '<td class="p-3.5 text-slate-500">' + (item.ht || '-') + '</td>' +
+       '<td class="p-3.5 font-medium text-slate-800">' + (item.administrado || '-') + '</td>' +
+       '<td class="p-3.5 text-slate-600">' + (item.dni || '-') + '</td>' +
+       '<td class="p-3.5"><span class="px-2 py-0.5 bg-brand-50 text-brand-700 border border-brand-100 rounded font-semibold text-[10px]">' + (item.acciones || item.tipoAsesoria || 'LEGAL') + '</span></td>' +
+       '<td class="p-3.5 font-semibold text-slate-700">' + (item.situacion || 'REGISTRADO') + '</td>' +
+       '<td class="p-3.5 text-center">' +
+         '<button type="button" onclick="editarExpediente(\'' + idRef + '\')" title="Editar Expediente Legal" class="px-3 py-1 bg-amber-100 text-amber-700 hover:bg-amber-600 hover:text-white rounded-lg transition-all font-semibold flex items-center justify-center space-x-1 mx-auto">' +
+           '<i class="fa-solid fa-pen"></i><span>Editar Legal</span>' +
+         '</button>' +
+       '</td>';
+     tbody.appendChild(tr);
+   });
+
+   txtPaginacion.innerText = datos.length + ' registros legales cargados';
+ }
+
+ function abrirModalNuevo() {
+   document.getElementById('esEdicion').value = 'false';
+   document.getElementById('modalTitulo').innerText = 'Nuevo Registro Legal';
+   document.getElementById('formLegal').reset();
+   document.getElementById('regFechaRegistro').valueAsDate = new Date();
+   document.getElementById('modalFormulario').style.display = 'flex';
+ }
+
+ function editarExpediente(codigo) {
+   var itemObj = listaExpedientes.find(function(el) {
+     return el.codigo === codigo || el.expediente === codigo || el.ht === codigo;
+   });
+
+   if (!itemObj) {
+     alert("No se encontraron los datos del registro.");
+     return;
+   }
+
+   document.getElementById('esEdicion').value = 'true';
+   document.getElementById('modalTitulo').innerText = 'Editar Registro Legal (' + codigo + ')';
+   
+   document.getElementById('regCodigo').value = itemObj.codigo || '';
+   document.getElementById('regTurno').value = itemObj.turno || itemObj.equipo || '';
+   document.getElementById('regEspecialista').value = itemObj.especialista || '';
+   document.getElementById('regFechaRegistro').value = itemObj.fechaRegistro || '';
+   document.getElementById('regFechaIngreso').value = itemObj.fechaIngreso || '';
+   document.getElementById('regHT').value = itemObj.ht || '';
+   document.getElementById('regExpediente').value = itemObj.expediente || '';
+   document.getElementById('regFolios').value = itemObj.folios || 1;
+   document.getElementById('regApellidos').value = itemObj.apellidos || '';
+   document.getElementById('regNombres').value = itemObj.nombres || '';
+   document.getElementById('regSexo').value = itemObj.sexo || 'M';
+   document.getElementById('regDNI').value = itemObj.dni || '';
+   document.getElementById('regFechaNacimiento').value = itemObj.fechaNacimiento || '';
+   document.getElementById('regEdad').value = itemObj.edad || '';
+   document.getElementById('regDistrito').value = itemObj.distrito || '';
+   document.getElementById('regSituacion').value = itemObj.situacion || 'EN TRAMITE';
+   document.getElementById('regAcciones').value = itemObj.acciones || itemObj.tipoAsesoria || '';
+
+   document.getElementById('modalFormulario').style.display = 'flex';
+ }
+
+ function cerrarModal() {
+   document.getElementById('modalFormulario').style.display = 'none';
+ }
+
+ function guardarRegistroLegal(e) {
+   e.preventDefault();
+   var esEd = document.getElementById('esEdicion').value === 'true';
+
+   var payload = {
+     codigo: document.getElementById('regCodigo').value,
+     turno: document.getElementById('regTurno').value,
+     especialista: document.getElementById('regEspecialista').value,
+     fechaRegistro: document.getElementById('regFechaRegistro').value,
+     fechaIngreso: document.getElementById('regFechaIngreso').value,
+     ht: document.getElementById('regHT').value,
+     expediente: document.getElementById('regExpediente').value,
+     folios: document.getElementById('regFolios').value,
+     apellidos: document.getElementById('regApellidos').value,
+     nombres: document.getElementById('regNombres').value,
+     sexo: document.getElementById('regSexo').value,
+     dni: document.getElementById('regDNI').value,
+     fechaNacimiento: document.getElementById('regFechaNacimiento').value,
+     edad: document.getElementById('regEdad').value,
+     distrito: document.getElementById('regDistrito').value,
+     situacion: document.getElementById('regSituacion').value,
+     acciones: document.getElementById('regAcciones').value
+   };
+
+   var accion = esEd ? 'editar' : 'registrarLegal';
+   
+   var tbody = document.getElementById('tbodyExpedientes');
+   tbody.innerHTML = '<tr><td colspan="9" class="p-6 text-center text-amber-600"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Guardando datos legales en Google Sheets...</td></tr>';
+   cerrarModal();
+
+   fetch(URL_APPS_SCRIPT + '?accion=' + accion + '&payload=' + encodeURIComponent(JSON.stringify(payload)), {
+     method: 'GET',
+     redirect: 'follow'
+   })
+     .then(function(res) { return res.json(); })
+     .then(function(respuesta) {
+       alert("✅ " + (respuesta.mensaje || "Registro procesado exitosamente."));
+       obtenerTodosLosExpedientes();
+     })
+     .catch(function(err) {
+       alert("Error de conexión al guardar: " + err.message);
+       obtenerTodosLosExpedientes();
+     });
+ }
+
+ function ejecutarBusqueda() {
+   var valor = document.getElementById('inputBusqueda').value.trim().toLowerCase();
+   if (!valor) {
+     cargarTabla(listaExpedientes);
+     return;
+   }
+   var filtrados = listaExpedientes.filter(function(item) {
+     return (item.expediente && item.expediente.toLowerCase().includes(valor)) || 
+            (item.dni && item.dni.toLowerCase().includes(valor)) || 
+            (item.administrado && item.administrado.toLowerCase().includes(valor));
+   });
+   cargarTabla(filtrados);
+ }
+
+ function limpiarBusqueda() {
+   document.getElementById('inputBusqueda').value = '';
+   cargarTabla(listaExpedientes);
+ }
+ </script>
+</body>  
+</html>
