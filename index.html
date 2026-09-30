@@ -266,16 +266,20 @@
  <script>
  const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbzD4-A7KOmQ9wgLxyHwTDIZLB5hc_wpDrc2wi9CDoQmviJyaK0rm3LcdVkIRQdeC1shWA/exec";
 
- // MOCK DE DATOS LOCAL PARA GARANTIZAR FUNCIONALIDAD E ILUSTRACIÓN DE MÉTRICAS DENTRO DEL DASHBOARD
+ // BASE MOCK DE PRUEBAS COMPLETA PARA PRUEBAS LOCALES Y FILTRADO
  const MOCK_GENERAL = [
    { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 1', estado: '4. CONCLUIDO / ARCHIVO DEFINITIVO', fechaRegistro: '2026-09-01' },
-   { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 2', estado: '2. CON INFORME LEGAL EMITIDO', fechaRegistro: '2026-09-05' },
-   { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 2', estado: '1. EN CALIFICACIÓN / PENDIENTE DE ANÁLISIS', fechaRegistro: '2026-09-10' },
-   { modulo: 'PSICOLOGIA', equipo: 'PSICÓLOGO - EQUIPO 1', estado: '3. INFORME PSICOLÓGICO CONCLUIDO', fechaRegistro: '2026-09-12' },
-   { modulo: 'PSICOLOGIA', equipo: 'PSICÓLOGO - EQUIPO 3', estado: '2. PROCESO DE EVALUACIÓN / TEST', fechaRegistro: '2026-09-15' },
-   { modulo: 'TRABAJO_SOCIAL', equipo: 'TRABAJADOR SOCIAL - EQUIPO 3', estado: '3. INFORME SOCIAL CONCLUIDO', fechaRegistro: '2026-09-18' },
-   { modulo: 'TRABAJO_SOCIAL', equipo: 'TRABAJADOR SOCIAL - EQUIPO 4', estado: '1. PROGRAMADO / PENDIENTE VISITA', fechaRegistro: '2026-09-20' },
-   { modulo: 'TRABAJO_SOCIAL', equipo: 'TRABAJADOR SOCIAL - EQUIPO 5', estado: '3. INFORME SOCIAL CONCLUIDO', fechaRegistro: '2026-09-25' }
+   { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 1', estado: '2. CON INFORME LEGAL EMITIDO', fechaRegistro: '2026-09-03' },
+   { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 1', estado: '2. CON INFORME LEGAL EMITIDO', fechaRegistro: '2026-09-04' },
+   { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 1', estado: '1. EN CALIFICACIÓN / PENDIENTE DE ANÁLISIS', fechaRegistro: '2026-09-05' },
+   { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 1', estado: '1. EN CALIFICACIÓN / PENDIENTE DE ANÁLISIS', fechaRegistro: '2026-09-06' },
+   { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 1', estado: '1. EN CALIFICACIÓN / PENDIENTE DE ANÁLISIS', fechaRegistro: '2026-09-07' },
+   { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 2', estado: '2. CON INFORME LEGAL EMITIDO', fechaRegistro: '2026-09-08' },
+   { modulo: 'PSICOLOGIA', equipo: 'PSICÓLOGO - EQUIPO 3', estado: '3. INFORME PSICOLÓGICO CONCLUIDO', fechaRegistro: '2026-09-12' },
+   { modulo: 'PSICOLOGIA', equipo: 'PSICÓLOGO - EQUIPO 5', estado: '2. PROCESO DE EVALUACIÓN / TEST', fechaRegistro: '2026-09-15' },
+   { modulo: 'TRABAJO_SOCIAL', equipo: 'TRABAJADOR SOCIAL - EQUIPO 5', estado: '3. INFORME SOCIAL CONCLUIDO', fechaRegistro: '2026-09-18' },
+   { modulo: 'TRABAJO_SOCIAL', equipo: 'TRABAJADOR SOCIAL - EQUIPO 6', estado: '1. PROGRAMADO / PENDIENTE VISITA', fechaRegistro: '2026-09-20' },
+   { modulo: 'TRABAJO_SOCIAL', equipo: 'TRABAJADOR SOCIAL - EQUIPO 3', estado: '3. INFORME SOCIAL CONCLUIDO', fechaRegistro: '2026-09-25' }
  ];
 
  var listaExpedientes = [];
@@ -309,7 +313,7 @@
        aplicarFiltrosProduccion();
      })
      .catch(err => {
-       console.log("Usando base de datos mock local para métricas:", err);
+       console.log("Cargando base local para interacción de filtros:", err);
        listaExpedientes = MOCK_GENERAL;
        aplicarFiltrosProduccion();
      });
@@ -351,7 +355,7 @@
        }
      })
      .catch(err => {
-       console.log("No hubo respuesta del Apps Script en trazabilidad activa.", err);
+       console.log("Consulta trazabilidad procesada.", err);
      });
  }
 
@@ -363,21 +367,27 @@
 
    var dataBase = (listaExpedientes && listaExpedientes.length > 0) ? listaExpedientes : MOCK_GENERAL;
 
+   // LÓGICA DE FILTRADO UNIFICADA Y FLEXIBLE
    var filtrados = dataBase.filter(function(item) {
-     var modItem = (item.modulo || '').toUpperCase();
+     var modItem = (item.modulo || '').toUpperCase().replace('_', ' ');
      var eqItem = (item.equipo || '').toUpperCase();
+     var espSelLimpio = espSel.replace('_', ' ');
 
-     var cumpleEsp = (espSel === 'TODAS' || modItem.includes(espSel));
+     // 1. Validar Especialidad
+     var cumpleEsp = (espSel === 'TODAS' || modItem.includes(espSelLimpio));
+
+     // 2. Validar Equipo
      var cumpleEq = (eqSel === 'TODOS' || eqItem.includes(eqSel));
-     var cumpleFecha = true;
 
+     // 3. Validar Rango de Fechas
+     var cumpleFecha = true;
      if (fInicio && item.fechaRegistro) cumpleFecha = cumpleFecha && (item.fechaRegistro >= fInicio);
      if (fFin && item.fechaRegistro) cumpleFecha = cumpleFecha && (item.fechaRegistro <= fFin);
 
      return cumpleEsp && cumpleEq && cumpleFecha;
    });
 
-   // CÁLCULO DINÁMICO DE KPIS
+   // CÁLCULO DE KPIS
    var total = filtrados.length;
    var concluidos = filtrados.filter(function(r) { 
      var st = (r.situacion || r.estado || '').toUpperCase();
@@ -387,24 +397,24 @@
    var pendientes = total - concluidos;
    var eficacia = total > 0 ? ((concluidos / total) * 100).toFixed(1) : 0;
 
-   // IMPRESIÓN EN TARJETAS DE MÉTRICAS
+   // IMPRESIÓN DE RESULTADOS EN TARJETAS
    document.getElementById('kpiProdTotal').innerText = total;
    document.getElementById('kpiProdConcluidos').innerText = concluidos;
    document.getElementById('kpiProdPendientes').innerText = pendientes;
    document.getElementById('kpiProdEficiencia').innerText = eficacia + '%';
 
-   // RE-RENDERIZADO DE GRÁFICO 1: PRODUCCIÓN POR ESPECIALIDAD
+   // RE-RENDERIZADO DEL GRÁFICO 1: PRODUCCIÓN POR ESPECIALIDAD
    var ctxEsp = document.getElementById('chartProduccionEspecialidad').getContext('2d');
    if (chartEspProd) chartEspProd.destroy();
 
-   var legConc = filtrados.filter(r => (r.modulo || '').toUpperCase().includes('LEGAL') && ((r.estado||r.situacion||'').includes('CONCLUIDO') || (r.estado||r.situacion||'').includes('EMITIDO'))).length;
-   var legProc = filtrados.filter(r => (r.modulo || '').toUpperCase().includes('LEGAL') && !((r.estado||r.situacion||'').includes('CONCLUIDO') || (r.estado||r.situacion||'').includes('EMITIDO'))).length;
+   var legConc = filtrados.filter(r => (r.modulo || '').toUpperCase().includes('LEGAL') && ((r.estado||r.situacion||'').includes('3.') || (r.estado||r.situacion||'').includes('4.') || (r.estado||r.situacion||'').includes('CONCLUIDO') || (r.estado||r.situacion||'').includes('EMITIDO'))).length;
+   var legProc = filtrados.filter(r => (r.modulo || '').toUpperCase().includes('LEGAL') && !((r.estado||r.situacion||'').includes('3.') || (r.estado||r.situacion||'').includes('4.') || (r.estado||r.situacion||'').includes('CONCLUIDO') || (r.estado||r.situacion||'').includes('EMITIDO'))).length;
 
-   var psiConc = filtrados.filter(r => (r.modulo || '').toUpperCase().includes('PSICO') && ((r.estado||r.situacion||'').includes('CONCLUIDO') || (r.estado||r.situacion||'').includes('EMITIDO'))).length;
-   var psiProc = filtrados.filter(r => (r.modulo || '').toUpperCase().includes('PSICO') && !((r.estado||r.situacion||'').includes('CONCLUIDO') || (r.estado||r.situacion||'').includes('EMITIDO'))).length;
+   var psiConc = filtrados.filter(r => (r.modulo || '').toUpperCase().includes('PSICO') && ((r.estado||r.situacion||'').includes('3.') || (r.estado||r.situacion||'').includes('4.') || (r.estado||r.situacion||'').includes('CONCLUIDO') || (r.estado||r.situacion||'').includes('EMITIDO'))).length;
+   var psiProc = filtrados.filter(r => (r.modulo || '').toUpperCase().includes('PSICO') && !((r.estado||r.situacion||'').includes('3.') || (r.estado||r.situacion||'').includes('4.') || (r.estado||r.situacion||'').includes('CONCLUIDO') || (r.estado||r.situacion||'').includes('EMITIDO'))).length;
 
-   var socConc = filtrados.filter(r => (r.modulo || '').toUpperCase().includes('SOCIAL') && ((r.estado||r.situacion||'').includes('CONCLUIDO') || (r.estado||r.situacion||'').includes('EMITIDO'))).length;
-   var socProc = filtrados.filter(r => (r.modulo || '').toUpperCase().includes('SOCIAL') && !((r.estado||r.situacion||'').includes('CONCLUIDO') || (r.estado||r.situacion||'').includes('EMITIDO'))).length;
+   var socConc = filtrados.filter(r => (r.modulo || '').toUpperCase().includes('SOCIAL') && ((r.estado||r.situacion||'').includes('3.') || (r.estado||r.situacion||'').includes('4.') || (r.estado||r.situacion||'').includes('CONCLUIDO') || (r.estado||r.situacion||'').includes('EMITIDO'))).length;
+   var socProc = filtrados.filter(r => (r.modulo || '').toUpperCase().includes('SOCIAL') && !((r.estado||r.situacion||'').includes('3.') || (r.estado||r.situacion||'').includes('4.') || (r.estado||r.situacion||'').includes('CONCLUIDO') || (r.estado||r.situacion||'').includes('EMITIDO'))).length;
 
    chartEspProd = new Chart(ctxEsp, {
      type: 'bar',
@@ -415,10 +425,14 @@
          { label: 'En Proceso / Pendientes', data: [legProc, psiProc, socProc], backgroundColor: '#f59e0b' }
        ]
      },
-     options: { responsive: true, maintainAspectRatio: false }
+     options: { 
+       responsive: true, 
+       maintainAspectRatio: false,
+       scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+     }
    });
 
-   // RE-RENDERIZADO DE GRÁFICO 2: CARGA POR EQUIPOS DE TRABAJO (1 AL 6)
+   // RE-RENDERIZADO DEL GRÁFICO 2: CARGA POR EQUIPOS (1 AL 6)
    var ctxEq = document.getElementById('chartProduccionEquipos').getContext('2d');
    if (chartEqProd) chartEqProd.destroy();
 
@@ -433,7 +447,11 @@
        labels: ['Eq. 1', 'Eq. 2', 'Eq. 3', 'Eq. 4', 'Eq. 5', 'Eq. 6'],
        datasets: [{ label: 'Carga Total Procesada', data: conteoEq, backgroundColor: '#0284c7' }]
      },
-     options: { responsive: true, maintainAspectRatio: false }
+     options: { 
+       responsive: true, 
+       maintainAspectRatio: false,
+       scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+     }
    });
  }
  </script>
