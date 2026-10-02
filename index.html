@@ -82,7 +82,7 @@
        <p class="text-xs text-slate-500 mb-3">Ingrese <b>Apellidos</b>, <b>N° DNI</b>, <b>N° de Expediente</b> o <b>Hoja de Trámite</b> para consultar la situación en las tres especialidades.</p>
        
        <div class="flex gap-2">
-         <input type="text" id="inputBusquedaTrazabilidad" onkeyup="if(event.key==='Enter') buscarTrazabilidad360()" placeholder="Ej: BENÍTEZ, 11223344, EXP-2026-101 o HT-2026-101..." class="flex-1 p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs uppercase font-medium outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white">
+         <input type="text" id="inputBusquedaTrazabilidad" onkeyup="if(event.key==='Enter') buscarTrazabilidad360()" placeholder="Ej: BENÍTEZ, 11223344, EXP-101-2026 o HT-101-2026..." class="flex-1 p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs uppercase font-medium outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white">
          <button type="button" onclick="buscarTrazabilidad360()" class="px-6 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-2">
            <i class="fa-solid fa-bolt"></i> CONSULTAR EXPEDIENTE
          </button>
@@ -90,13 +90,14 @@
      </div>
 
      <div id="contenedorResultadoTrazabilidad" class="space-y-6">
+       <!-- CABECERA DEL EXPEDIENTE MULTIDISCIPLINARIO CON ORDEN Y FORMATO DE AÑO AL FINAL -->
        <div class="bg-slate-900 text-white p-5 rounded-2xl shadow-md border border-slate-800">
          <p class="text-[10px] font-bold tracking-wider text-emerald-400 uppercase">EXPEDIENTE MULTIDISCIPLINARIO</p>
          <h3 id="txtNombreAdministrado" class="text-xl font-bold tracking-tight">BENÍTEZ VEGA, CARLOS ANTONIO</h3>
-         <div class="flex flex-wrap gap-4 text-xs font-mono text-slate-300 mt-2">
+         <div class="flex flex-wrap gap-6 text-xs font-mono text-slate-300 mt-2">
            <span>DNI: <strong id="txtDniAdministrado" class="text-emerald-400">11223344</strong></span>
-           <span>Hoja Trámite: <strong id="txtHtAdministrado" class="text-emerald-400">HT-2026-101</strong></span>
-           <span>N° Expediente: <strong id="txtExpAdministrado" class="text-emerald-400">EXP-2026-101</strong></span>
+           <span>N° Expediente: <strong id="txtExpAdministrado" class="text-emerald-400">EXP-101-2026</strong></span>
+           <span>N° Hoja Trámite: <strong id="txtHtAdministrado" class="text-emerald-400">HT-101-2026</strong></span>
          </div>
        </div>
 
@@ -256,13 +257,13 @@
  </main>
 
  <script>
- // NUEVA MATRIZ DE PRUEBA: COBERTURA TOTAL PARA LOS 6 EQUIPOS Y LAS 3 ESPECIALIDADES
+ // MATRIZ DE TRAZABILIDAD CON EL AÑO AL FINAL EN EXPEDIENTES Y HOJAS DE TRÁMITE
  const MOCK_TRAZABILIDAD = [
    {
      administrado: "BENÍTEZ VEGA, CARLOS ANTONIO",
      dni: "11223344",
-     ht: "HT-2026-101",
-     expediente: "EXP-2026-101",
+     ht: "HT-101-2026",
+     expediente: "EXP-101-2026",
      legal: { estado: "2. CON INFORME LEGAL EMITIDO", resp: "ABOGADO - EQUIPO 1", det: "EMISIÓN DE DICTAMEN / INFORME", fec: "02/09/2026", obs: "INFORME LEGAL N° 012-2026 EMITIDO Y NOTIFICADO." },
      psico: { estado: "3. INFORME PSICOLÓGICO CONCLUIDO", resp: "PSICÓLOGO - EQUIPO 1", det: "EVALUACIÓN INTEGRAL", fec: "04/09/2026", obs: "EVALUACIÓN CONCLUIDA. INFORME REMITIDO AL EXPEDIENTE." },
      social: { estado: "3. INFORME SOCIAL CONCLUIDO", resp: "TRABAJADOR SOCIAL - EQUIPO 1", det: "POBRE NO EXTREMO", fec: "05/09/2026", obs: "VISITA DOMICILIARIA CONCLUIDA Y FICHA ARCHIVADA." }
@@ -270,8 +271,8 @@
    {
      administrado: "CÓRDOVA RÍOS, ANA MARÍA",
      dni: "22334455",
-     ht: "HT-2026-102",
-     expediente: "EXP-2026-102",
+     ht: "HT-102-2026",
+     expediente: "EXP-102-2026",
      legal: { estado: "1. EN CALIFICACIÓN / PENDIENTE DE ANÁLISIS", resp: "ABOGADO - EQUIPO 2", det: "REVISIÓN FORMAL", fec: "08/09/2026", obs: "EN REVISIÓN DE ADMISIBILIDAD." },
      psico: { estado: "2. PROCESO DE EVALUACIÓN / TEST", resp: "PSICÓLOGO - EQUIPO 2", det: "APLICACIÓN DE PRUEBAS", fec: "10/09/2026", obs: "SEGUNDA SESIÓN PROGRAMADA." },
      social: { estado: "1. PROGRAMADO / PENDIENTE VISITA", resp: "TRABAJADOR SOCIAL - EQUIPO 2", det: "POBRE EXTREMO", fec: "11/09/2026", obs: "VISITA EN CAMPO PROGRAMADA PARA ESTA SEMANA." }
@@ -279,8 +280,8 @@
    {
      administrado: "DÁVILA MENDOZA, JORGE LUIS",
      dni: "33445566",
-     ht: "HT-2026-103",
-     expediente: "EXP-2026-103",
+     ht: "HT-103-2026",
+     expediente: "EXP-103-2026",
      legal: { estado: "4. CONCLUIDO / ARCHIVO DEFINITIVO", resp: "ABOGADO - EQUIPO 3", det: "RESOLUCIÓN FINAL", fec: "12/09/2026", obs: "PROCESO FINALIZADO SATISFACTORIAMENTE." },
      psico: { estado: "3. INFORME PSICOLÓGICO CONCLUIDO", resp: "PSICÓLOGO - EQUIPO 3", det: "EVALUACIÓN CLÍNICA", fec: "14/09/2026", obs: "INFORME 044-2026 EMITIDO." },
      social: { estado: "3. INFORME SOCIAL CONCLUIDO", resp: "TRABAJADOR SOCIAL - EQUIPO 3", det: "NO POBRE / MEDIO", fec: "15/09/2026", obs: "INFORME SOCIAL REMITIDO A AUDITORÍA." }
@@ -288,8 +289,8 @@
    {
      administrado: "ESPINOZA CASTILLO, LUCÍA BEATRIZ",
      dni: "44556677",
-     ht: "HT-2026-104",
-     expediente: "EXP-2026-104",
+     ht: "HT-104-2026",
+     expediente: "EXP-104-2026",
      legal: { estado: "2. CON INFORME LEGAL EMITIDO", resp: "ABOGADO - EQUIPO 4", det: "DICTAMEN TÉCNICO", fec: "18/09/2026", obs: "DICTAMEN EMITIDO Y ENVIADO A MESA DE PARTES." },
      psico: { estado: "1. CITADO PARA EVALUACIÓN", resp: "PSICÓLOGO - EQUIPO 4", det: "ENTREVISTA DE ENTRADA", fec: "19/09/2026", obs: "CITACIÓN NOTIFICADA VÍA TELEFÓNICA." },
      social: { estado: "1. PROGRAMADO / PENDIENTE VISITA", resp: "TRABAJADOR SOCIAL - EQUIPO 4", det: "POBRE NO EXTREMO", fec: "20/09/2026", obs: "PENDIENTE CONFIRMACIÓN DE DIRECCIÓN." }
@@ -297,8 +298,8 @@
    {
      administrado: "FUENTES SALAZAR, PEDRO PABLO",
      dni: "55667788",
-     ht: "HT-2026-105",
-     expediente: "EXP-2026-105",
+     ht: "HT-105-2026",
+     expediente: "EXP-105-2026",
      legal: { estado: "1. EN CALIFICACIÓN / PENDIENTE DE ANÁLISIS", resp: "ABOGADO - EQUIPO 5", det: "ANÁLISIS DOCUMENTARIO", fec: "22/09/2026", obs: "EVALUANDO PRUEBAS PRESENTADAS." },
      psico: { estado: "2. PROCESO DE EVALUACIÓN / TEST", resp: "PSICÓLOGO - EQUIPO 5", det: "SESIÓN INDIVIDUAL", fec: "23/09/2026", obs: "PRIMERA EVALUACIÓN COMPLETADA." },
      social: { estado: "3. INFORME SOCIAL CONCLUIDO", resp: "TRABAJADOR SOCIAL - EQUIPO 5", det: "POBRE EXTREMO", fec: "24/09/2026", obs: "FICHA SOCIOECONÓMICA APROBADA." }
@@ -306,42 +307,30 @@
    {
      administrado: "GUTIÉRREZ VARGAS, ELENA PATRICIA",
      dni: "66778899",
-     ht: "HT-2026-106",
-     expediente: "EXP-2026-106",
+     ht: "HT-106-2026",
+     expediente: "EXP-106-2026",
      legal: { estado: "4. CONCLUIDO / ARCHIVO DEFINITIVO", resp: "ABOGADO - EQUIPO 6", det: "ARCHIVADO", fec: "25/09/2026", obs: "CONCLUIDO POR CUMPLIMIENTO DE PLAZO." },
      psico: { estado: "3. INFORME PSICOLÓGICO CONCLUIDO", resp: "PSICÓLOGO - EQUIPO 6", det: "EVALUACIÓN PERICIAL", fec: "26/09/2026", obs: "INFORME EMITIDO AL AREA LEGAL." },
      social: { estado: "4. DIRECCIÓN NO UBICADA", resp: "TRABAJADOR SOCIAL - EQUIPO 6", det: "INSPECCIÓN FALLIDA", fec: "28/09/2026", obs: "NO SE UBICÓ EL DOMICILIO INDICADO." }
    }
  ];
 
- // BASE DE DATOS DE PRODUCCIÓN DISTRIBUIDA EN LOS 6 EQUIPOS
  const MOCK_GENERAL = [
-   // EQUIPO 1
    { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 1', estado: '2. CON INFORME LEGAL EMITIDO', fechaRegistro: '2026-09-02' },
    { modulo: 'PSICOLOGIA', equipo: 'PSICÓLOGO - EQUIPO 1', estado: '3. INFORME PSICOLÓGICO CONCLUIDO', fechaRegistro: '2026-09-04' },
    { modulo: 'TRABAJO_SOCIAL', equipo: 'TRABAJADOR SOCIAL - EQUIPO 1', estado: '3. INFORME SOCIAL CONCLUIDO', fechaRegistro: '2026-09-05' },
-
-   // EQUIPO 2
    { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 2', estado: '1. EN CALIFICACIÓN / PENDIENTE DE ANÁLISIS', fechaRegistro: '2026-09-08' },
    { modulo: 'PSICOLOGIA', equipo: 'PSICÓLOGO - EQUIPO 2', estado: '2. PROCESO DE EVALUACIÓN / TEST', fechaRegistro: '2026-09-10' },
    { modulo: 'TRABAJO_SOCIAL', equipo: 'TRABAJADOR SOCIAL - EQUIPO 2', estado: '1. PROGRAMADO / PENDIENTE VISITA', fechaRegistro: '2026-09-11' },
-
-   // EQUIPO 3
    { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 3', estado: '4. CONCLUIDO / ARCHIVO DEFINITIVO', fechaRegistro: '2026-09-12' },
    { modulo: 'PSICOLOGIA', equipo: 'PSICÓLOGO - EQUIPO 3', estado: '3. INFORME PSICOLÓGICO CONCLUIDO', fechaRegistro: '2026-09-14' },
    { modulo: 'TRABAJO_SOCIAL', equipo: 'TRABAJADOR SOCIAL - EQUIPO 3', estado: '3. INFORME SOCIAL CONCLUIDO', fechaRegistro: '2026-09-15' },
-
-   // EQUIPO 4
    { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 4', estado: '2. CON INFORME LEGAL EMITIDO', fechaRegistro: '2026-09-18' },
    { modulo: 'PSICOLOGIA', equipo: 'PSICÓLOGO - EQUIPO 4', estado: '1. CITADO PARA EVALUACIÓN', fechaRegistro: '2026-09-19' },
    { modulo: 'TRABAJO_SOCIAL', equipo: 'TRABAJADOR SOCIAL - EQUIPO 4', estado: '1. PROGRAMADO / PENDIENTE VISITA', fechaRegistro: '2026-09-20' },
-
-   // EQUIPO 5
    { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 5', estado: '1. EN CALIFICACIÓN / PENDIENTE DE ANÁLISIS', fechaRegistro: '2026-09-22' },
    { modulo: 'PSICOLOGIA', equipo: 'PSICÓLOGO - EQUIPO 5', estado: '2. PROCESO DE EVALUACIÓN / TEST', fechaRegistro: '2026-09-23' },
    { modulo: 'TRABAJO_SOCIAL', equipo: 'TRABAJADOR SOCIAL - EQUIPO 5', estado: '3. INFORME SOCIAL CONCLUIDO', fechaRegistro: '2026-09-24' },
-
-   // EQUIPO 6
    { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 6', estado: '4. CONCLUIDO / ARCHIVO DEFINITIVO', fechaRegistro: '2026-09-25' },
    { modulo: 'PSICOLOGIA', equipo: 'PSICÓLOGO - EQUIPO 6', estado: '3. INFORME PSICOLÓGICO CONCLUIDO', fechaRegistro: '2026-09-26' },
    { modulo: 'TRABAJO_SOCIAL', equipo: 'TRABAJADOR SOCIAL - EQUIPO 6', estado: '4. DIRECCIÓN NO UBICADA', fechaRegistro: '2026-09-28' }
@@ -403,10 +392,11 @@
      return;
    }
 
+   // ASIGNACIÓN ACTUALIZADA CON EL NUEVO ORDEN DE CAMPOS
    document.getElementById('txtNombreAdministrado').innerText = encontrado.administrado;
    document.getElementById('txtDniAdministrado').innerText = encontrado.dni;
-   document.getElementById('txtHtAdministrado').innerText = encontrado.ht;
    document.getElementById('txtExpAdministrado').innerText = encontrado.expediente;
+   document.getElementById('txtHtAdministrado').innerText = encontrado.ht;
 
    document.getElementById('stLegal').innerText = encontrado.legal.estado;
    document.getElementById('respLegal').innerText = encontrado.legal.resp;
