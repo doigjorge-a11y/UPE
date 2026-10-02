@@ -3,7 +3,7 @@
 <head>  
  <meta charset="UTF-8">  
  <meta name="viewport" content="width=device-width, initial-scale=1.0">  
- <title>Sistema de Control y Gestión de Expedientes</title>  
+ <title>Módulo Central de Control y Producción</title>  
   
  <script src="https://cdn.tailwindcss.com"></script>  
  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">  
@@ -79,10 +79,10 @@
        <h2 class="text-xs font-bold text-emerald-800 uppercase tracking-wider mb-1 flex items-center gap-2">
          <i class="fa-solid fa-magnifying-glass"></i> CONSULTA DE TRAZABILIDAD TRANSVERSAL
        </h2>
-       <p class="text-xs text-slate-500 mb-3">Ingrese Apellidos, DNI, N° de Expediente o Hoja de Trámite del administrado para revisar su estado en las tres especialidades.</p>
+       <p class="text-xs text-slate-500 mb-3">Ingrese <b>Apellidos</b>, <b>N° DNI</b>, <b>N° de Expediente</b> o <b>Hoja de Trámite</b> del administrado para revisar su estado en las tres especialidades.</p>
        
        <div class="flex gap-2">
-         <input type="text" id="inputBusquedaTrazabilidad" onkeyup="if(event.key==='Enter') buscarTrazabilidad360()" placeholder="MAMANI, DNI O EXPEDIENTE..." class="flex-1 p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs uppercase font-medium outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white">
+         <input type="text" id="inputBusquedaTrazabilidad" onkeyup="if(event.key==='Enter') buscarTrazabilidad360()" placeholder="Ingrese Apellidos, DNI, N° Expediente o Hoja de Trámite..." class="flex-1 p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs uppercase font-medium outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white">
          <button type="button" onclick="buscarTrazabilidad360()" class="px-6 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-2">
            <i class="fa-solid fa-bolt"></i> CONSULTAR EXPEDIENTE
          </button>
@@ -161,10 +161,9 @@
      </div>
    </div>
 
-   <!-- SECCIÓN 2: DASHBOARD DE PRODUCCIÓN DE ADMINISTRACIÓN -->
+   <!-- SECCIÓN 2: DASHBOARD DE PRODUCCIÓN -->
    <div id="vista-produccion" class="space-y-6 hidden">
      
-     <!-- BARRA DE FILTROS -->
      <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
        <div>
          <label class="block text-[11px] font-bold text-slate-600 mb-1">FECHA DESDE:</label>
@@ -202,7 +201,6 @@
        </div>
      </div>
 
-     <!-- TARJETAS KPI -->
      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
          <div>
@@ -234,11 +232,10 @@
        </div>
      </div>
 
-     <!-- GRÁFICOS ANALÍTICOS -->
      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
          <h4 class="text-xs font-bold text-slate-700 uppercase mb-4 flex items-center gap-2">
-           <i class="fa-solid fa-chart-column text-blue-600"></i> Producción por Especialidad (Concluidos vs Proceso)
+           <i class="fa-solid fa-chart-column text-blue-600"></i> Producción por Especialidad
          </h4>
          <div class="relative h-64">
            <canvas id="chartProduccionEspecialidad"></canvas>
@@ -246,7 +243,7 @@
        </div>
        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
          <h4 class="text-xs font-bold text-slate-700 uppercase mb-4 flex items-center gap-2">
-           <i class="fa-solid fa-users-gear text-purple-600"></i> Carga y Resolución por Equipos (1 al 6)
+           <i class="fa-solid fa-users-gear text-purple-600"></i> Carga y Resolución por Equipos
          </h4>
          <div class="relative h-64">
            <canvas id="chartProduccionEquipos"></canvas>
@@ -259,21 +256,43 @@
  </main>
 
  <script>
- const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbzD4-A7KOmQ9wgLxyHwTDIZLB5hc_wpDrc2wi9CDoQmviJyaK0rm3LcdVkIRQdeC1shWA/exec";
+ // BASE DE DATOS MOCK CON LOS 4 CRITERIOS
+ const MOCK_TRAZABILIDAD = [
+   {
+     administrado: "MAMANI CHURA, JUAN CARLOS",
+     dni: "43526170",
+     ht: "102031",
+     expediente: "501235",
+     legal: { estado: "2. CON INFORME LEGAL EMITIDO", resp: "ABOGADO - EQUIPO 2", det: "EMISIÓN DE DICTAMEN / INFORME", fec: "29/09/2026", obs: "INFORME EMITIDO Y NOTIFICADO A OTRA INSTANCIA." },
+     psico: { estado: "2. PROCESO DE EVALUACIÓN / TEST", resp: "PSICÓLOGO - EQUIPO 1", det: "EVALUACIÓN INTEGRAL", fec: "29/09/2026", obs: "PRIMERA SESIÓN EFECTUADA. PENDIENTE SEGUNDA CITA." },
+     social: { estado: "1. PROGRAMADO / PENDIENTE VISITA", resp: "TRABAJADOR SOCIAL - EQUIPO 3", det: "POBRE NO EXTREMO", fec: "29/09/2026", obs: "SE RECEPCIONÓ EXPEDIENTE Y SE PROGRAMÓ VISITA." }
+   },
+   {
+     administrado: "QUISPE PÉREZ, MARIA ELENA",
+     dni: "41234567",
+     ht: "202450",
+     expediente: "601122",
+     legal: { estado: "4. CONCLUIDO / ARCHIVO DEFINITIVO", resp: "ABOGADO - EQUIPO 1", det: "DICTAMEN FINAL", fec: "28/09/2026", obs: "PROCESO CONCLUIDO Y ARCHIVADO SATISFACTORIAMENTE." },
+     psico: { estado: "3. INFORME PSICOLÓGICO CONCLUIDO", resp: "PSICÓLOGO - EQUIPO 2", det: "EVALUACIÓN PSICOLÓGICA", fec: "25/09/2026", obs: "INFORME FINAL EMITIDO Y ENVIADO A EXPEDIENTE." },
+     social: { estado: "3. INFORME SOCIAL CONCLUIDO", resp: "TRABAJADOR SOCIAL - EQUIPO 1", det: "VISITA DOMICILIARIA", fec: "27/09/2026", obs: "VISITA REALIZADA E INFORME SOCIAL FINALIZADO." }
+   },
+   {
+     administrado: "GARCÍA FLORES, ROBERTO CARLOS",
+     dni: "10293847",
+     ht: "304512",
+     expediente: "708910",
+     legal: { estado: "1. EN CALIFICACIÓN / PENDIENTE DE ANÁLISIS", resp: "ABOGADO - EQUIPO 3", det: "REVISIÓN INICIAL", fec: "01/10/2026", obs: "EXPEDIENTE EN REVISIÓN DE REQUISITOS FORMALES." },
+     psico: { estado: "1. CITADO PARA EVALUACIÓN", resp: "PSICÓLOGO - EQUIPO 4", det: "ENTREVISTA INICIAL", fec: "02/10/2026", obs: "CITACIÓN NOTIFICADA AL ADMINISTRADO." },
+     social: { estado: "1. PROGRAMADO / PENDIENTE VISITA", resp: "TRABAJADOR SOCIAL - EQUIPO 2", det: "INSPECCIÓN DE CAMPO", fec: "01/10/2026", obs: "VISITA PROGRAMADA PARA LA PRÓXIMA SEMANA." }
+   }
+ ];
 
- // BASE DE DATOS DE RESPALDO ROBUSTA INMEDIATA
  const MOCK_GENERAL = [
    { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 1', estado: '4. CONCLUIDO / ARCHIVO DEFINITIVO', fechaRegistro: '2026-09-01' },
    { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 1', estado: '2. CON INFORME LEGAL EMITIDO', fechaRegistro: '2026-09-03' },
-   { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 1', estado: '2. CON INFORME LEGAL EMITIDO', fechaRegistro: '2026-09-04' },
-   { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 1', estado: '1. EN CALIFICACIÓN / PENDIENTE DE ANÁLISIS', fechaRegistro: '2026-09-05' },
-   { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 1', estado: '1. EN CALIFICACIÓN / PENDIENTE DE ANÁLISIS', fechaRegistro: '2026-09-06' },
    { modulo: 'LEGAL', equipo: 'ABOGADO - EQUIPO 2', estado: '2. CON INFORME LEGAL EMITIDO', fechaRegistro: '2026-09-08' },
    { modulo: 'PSICOLOGIA', equipo: 'PSICÓLOGO - EQUIPO 3', estado: '3. INFORME PSICOLÓGICO CONCLUIDO', fechaRegistro: '2026-09-12' },
-   { modulo: 'PSICOLOGIA', equipo: 'PSICÓLOGO - EQUIPO 5', estado: '2. PROCESO DE EVALUACIÓN / TEST', fechaRegistro: '2026-09-15' },
-   { modulo: 'TRABAJO_SOCIAL', equipo: 'TRABAJADOR SOCIAL - EQUIPO 5', estado: '3. INFORME SOCIAL CONCLUIDO', fechaRegistro: '2026-09-18' },
-   { modulo: 'TRABAJO_SOCIAL', equipo: 'TRABAJADOR SOCIAL - EQUIPO 6', estado: '1. PROGRAMADO / PENDIENTE VISITA', fechaRegistro: '2026-09-20' },
-   { modulo: 'TRABAJO_SOCIAL', equipo: 'TRABAJADOR SOCIAL - EQUIPO 3', estado: '3. INFORME SOCIAL CONCLUIDO', fechaRegistro: '2026-09-25' }
+   { modulo: 'TRABAJO_SOCIAL', equipo: 'TRABAJADOR SOCIAL - EQUIPO 5', estado: '3. INFORME SOCIAL CONCLUIDO', fechaRegistro: '2026-09-18' }
  ];
 
  var listaExpedientes = MOCK_GENERAL;
@@ -299,21 +318,68 @@
    }
  }
 
+ // FUNCIÓN AUXILIAR: ELIMINA TILDES Y CONVIERTE A MAYÚSCULAS
+ function normalizarTexto(texto) {
+   if (!texto) return '';
+   return texto
+     .toString()
+     .normalize("NFD")
+     .replace(/[\u0300-\u036f]/g, "")
+     .toUpperCase()
+     .trim();
+ }
+
+ // FUNCIÓN DE BÚSQUEDA EXPLICITA PARA LOS 4 CRITERIOS
  function buscarTrazabilidad360() {
-   var valor = document.getElementById('inputBusquedaTrazabilidad').value.trim();
-   if (!valor) return alert("Ingrese un término de búsqueda.");
+   var inputValor = document.getElementById('inputBusquedaTrazabilidad').value;
+   var busqueda = normalizarTexto(inputValor);
 
-   var encontrado = MOCK_GENERAL.find(r => r.equipo.includes(valor) || r.modulo.includes(valor)) || {
-     administrado: "MAMANI CHURA, JUAN CARLOS",
-     dni: "43526170",
-     ht: "102031",
-     expediente: "501235"
-   };
+   if (!busqueda) {
+     alert("Por favor, ingrese alguno de los criterios: Apellidos, N° DNI, N° de Expediente o N° Hoja de Trámite.");
+     return;
+   }
 
-   document.getElementById('txtNombreAdministrado').innerText = encontrado.administrado || 'MAMANI CHURA, JUAN CARLOS';
-   document.getElementById('txtDniAdministrado').innerText = encontrado.dni || '43526170';
-   document.getElementById('txtHtAdministrado').innerText = encontrado.ht || '102031';
-   document.getElementById('txtExpAdministrado').innerText = encontrado.expediente || '501235';
+   // EVALUACIÓN DE LOS 4 CRITERIOS DE BÚSQUEDA
+   var encontrado = MOCK_TRAZABILIDAD.find(function(item) {
+     var matchApellidos  = normalizarTexto(item.administrado).includes(busqueda);
+     var matchDni        = normalizarTexto(item.dni).includes(busqueda);
+     var matchExpediente = normalizarTexto(item.expediente).includes(busqueda);
+     var matchHT         = normalizarTexto(item.ht).includes(busqueda);
+
+     return matchApellidos || matchDni || matchExpediente || matchHT;
+   });
+
+   if (!encontrado) {
+     alert("No se encontró ningún registro que coincida con: '" + inputValor + "'.\nVerifique el Apellido, DNI, Expediente o Hoja de Trámite.");
+     return;
+   }
+
+   // MOSTRAR DATOS DEL ADMINISTRADO
+   document.getElementById('txtNombreAdministrado').innerText = encontrado.administrado;
+   document.getElementById('txtDniAdministrado').innerText = encontrado.dni;
+   document.getElementById('txtHtAdministrado').innerText = encontrado.ht;
+   document.getElementById('txtExpAdministrado').innerText = encontrado.expediente;
+
+   // MÓDULO LEGAL
+   document.getElementById('stLegal').innerText = encontrado.legal.estado;
+   document.getElementById('respLegal').innerText = encontrado.legal.resp;
+   document.getElementById('detLegal').innerText = encontrado.legal.det;
+   document.getElementById('fecLegal').innerText = encontrado.legal.fec;
+   document.getElementById('obsLegal').innerText = encontrado.legal.obs;
+
+   // MÓDULO PSICOLOGÍA
+   document.getElementById('stPsico').innerText = encontrado.psico.estado;
+   document.getElementById('respPsico').innerText = encontrado.psico.resp;
+   document.getElementById('detPsico').innerText = encontrado.psico.det;
+   document.getElementById('fecPsico').innerText = encontrado.psico.fec;
+   document.getElementById('obsPsico').innerText = encontrado.psico.obs;
+
+   // TRABAJO SOCIAL
+   document.getElementById('stSocial').innerText = encontrado.social.estado;
+   document.getElementById('respSocial').innerText = encontrado.social.resp;
+   document.getElementById('detSocial').innerText = encontrado.social.det;
+   document.getElementById('fecSocial').innerText = encontrado.social.fec;
+   document.getElementById('obsSocial').innerText = encontrado.social.obs;
  }
 
  function aplicarFiltrosProduccion() {
@@ -323,12 +389,12 @@
    var fFin = document.getElementById('filtroFechaFin').value;
 
    var filtrados = listaExpedientes.filter(function(item) {
-     var modItem = (item.modulo || '').toUpperCase();
-     var eqItem = (item.equipo || '').toUpperCase();
-     var espSelLimpio = espSel.toUpperCase();
+     var modItem = normalizarTexto(item.modulo);
+     var eqItem = normalizarTexto(item.equipo);
+     var espSelLimpio = normalizarTexto(espSel);
 
      var cumpleEsp = (espSel === 'TODAS' || modItem.includes(espSelLimpio));
-     var cumpleEq = (eqSel === 'TODOS' || eqItem.includes(eqSel.toUpperCase()));
+     var cumpleEq = (eqSel === 'TODOS' || eqItem.includes(normalizarTexto(eqSel)));
 
      var cumpleFecha = true;
      if (item.fechaRegistro) {
@@ -348,7 +414,7 @@
 
    var total = filtrados.length;
    var concluidos = filtrados.filter(function(r) { 
-     var st = (r.situacion || r.estado || '').toUpperCase();
+     var st = normalizarTexto(r.situacion || r.estado);
      return st.includes('3.') || st.includes('4.') || st.includes('CONCLUIDO') || st.includes('EMITIDO');
    }).length;
 
@@ -360,7 +426,6 @@
    document.getElementById('kpiProdPendientes').innerText = pendientes;
    document.getElementById('kpiProdEficiencia').innerText = eficacia + '%';
 
-   // GRÁFICO 1
    var ctxEsp = document.getElementById('chartProduccionEspecialidad').getContext('2d');
    if (chartEspProd) chartEspProd.destroy();
 
@@ -385,7 +450,6 @@
      options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
    });
 
-   // GRÁFICO 2
    var ctxEq = document.getElementById('chartProduccionEquipos').getContext('2d');
    if (chartEqProd) chartEqProd.destroy();
 
