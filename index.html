@@ -90,7 +90,7 @@
      </div>
 
      <div id="contenedorResultadoTrazabilidad" class="space-y-6">
-       <!-- CABECERA DEL EXPEDIENTE MULTIDISCIPLINARIO CON ORDEN Y FORMATO DE AÑO AL FINAL -->
+       <!-- CABECERA DEL EXPEDIENTE MULTIDISCIPLINARIO: ORDEN [DNI, EXPEDIENTE, HOJA TRÁMITE CON AÑO AL FINAL] -->
        <div class="bg-slate-900 text-white p-5 rounded-2xl shadow-md border border-slate-800">
          <p class="text-[10px] font-bold tracking-wider text-emerald-400 uppercase">EXPEDIENTE MULTIDISCIPLINARIO</p>
          <h3 id="txtNombreAdministrado" class="text-xl font-bold tracking-tight">BENÍTEZ VEGA, CARLOS ANTONIO</h3>
@@ -257,7 +257,10 @@
  </main>
 
  <script>
- // MATRIZ DE TRAZABILIDAD CON EL AÑO AL FINAL EN EXPEDIENTES Y HOJAS DE TRÁMITE
+ // CONFIGURACIÓN DE CONEXIÓN CON GOOGLE APPS SCRIPT
+ const URL_GOOGLE_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbxJtDKYNQG9zuLw4jEwJwqQuQjY7I8FF76sXKHJYY_jc9wMUG9eMrqkK6TkOQBmuN3arQ/exec";
+
+ // MATRIZ DE RESPALDO (LOCAL MOCK)
  const MOCK_TRAZABILIDAD = [
    {
      administrado: "BENÍTEZ VEGA, CARLOS ANTONIO",
@@ -340,9 +343,25 @@
  var chartEspProd = null;
  var chartEqProd = null;
 
- document.addEventListener('DOMContentLoaded', function() {
+ document.addEventListener('DOMContentLoaded', async function() {
+   await sincronizarDatosRemotos();
    aplicarFiltrosProduccion();
  });
+
+ async function sincronizarDatosRemotos() {
+   if (!URL_GOOGLE_APPS_SCRIPT) return;
+   try {
+     const response = await fetch(`${URL_GOOGLE_APPS_SCRIPT}?accion=obtenerConsolidado`);
+     const data = await response.json();
+     if (data && data.trazabilidad && data.general) {
+       if (data.trazabilidad.length > 0) MOCK_TRAZABILIDAD.length = 0, MOCK_TRAZABILIDAD.push(...data.trazabilidad);
+       if (data.general.length > 0) MOCK_GENERAL.length = 0, MOCK_GENERAL.push(...data.general);
+       listaExpedientes = MOCK_GENERAL;
+     }
+   } catch (err) {
+     console.warn("Modo offline o error de red con Google Sheets. Usando base local de respaldo.", err);
+   }
+ }
 
  function cambiarPestana(vistaId) {
    document.getElementById('vista-trazabilidad').classList.add('hidden');
@@ -355,7 +374,7 @@
      document.getElementById('tab-trazabilidad').classList.add('active');
    } else {
      document.getElementById('tab-produccion').classList.add('active');
-     aplicarFiltrosProduccion();
+     sincronizarDatosRemotos().then(() => aplicarFiltrosProduccion());
    }
  }
 
@@ -369,7 +388,9 @@
      .trim();
  }
 
- function buscarTrazabilidad360() {
+ async function buscarTrazabilidad360() {
+   await sincronizarDatosRemotos();
+   
    var inputValor = document.getElementById('inputBusquedaTrazabilidad').value;
    var busqueda = normalizarTexto(inputValor);
 
@@ -388,11 +409,10 @@
    });
 
    if (!encontrado) {
-     alert("No se encontró ningún registro que coincida con: '" + inputValor + "'.\nRevise Apellidos, DNI, N° Expediente o Hoja de Trámite.");
+     alert("No se encontró ningún registro en el servidor que coincida con: '" + inputValor + "'.");
      return;
    }
 
-   // ASIGNACIÓN ACTUALIZADA CON EL NUEVO ORDEN DE CAMPOS
    document.getElementById('txtNombreAdministrado').innerText = encontrado.administrado;
    document.getElementById('txtDniAdministrado').innerText = encontrado.dni;
    document.getElementById('txtExpAdministrado').innerText = encontrado.expediente;
@@ -476,7 +496,7 @@
    chartEspProd = new Chart(ctxEsp, {
      type: 'bar',
      data: {
-       labels: ['Legal ⚖️', 'Psicología 🧠', 'Trabajo Social 🏠'],
+       labels: ['Legal ⚖️️', 'Psicología 🧠', 'Trabajo Social 🏠'],
        datasets: [
          { label: 'Concluidos / Emitidos', data: [legConc, psiConc, socConc], backgroundColor: '#10b981' },
          { label: 'En Proceso / Pendientes', data: [legProc, psiProc, socProc], backgroundColor: '#f59e0b' }
