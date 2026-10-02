@@ -1,459 +1,396 @@
-<!DOCTYPE html>  
-<html lang="es" class="h-full bg-slate-50">  
-<head>  
- <meta charset="UTF-8">  
- <meta name="viewport" content="width=device-width, initial-scale=1.0">  
- <title>Módulo Central de Control y Producción</title>  
-  
- <script src="https://cdn.tailwindcss.com"></script>  
- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">  
- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>  
-  
- <script>  
- tailwind.config = {  
-   theme: {  
-     extend: {  
-       colors: {  
-         brand: {  
-           50: '#f0f7ff',  
-           100: '#e0effe',  
-           500: '#0284c7',  
-           700: '#0369a1',  
-           900: '#0c4a6e',  
-         }  
-       }  
-     }  
-   }  
- }  
- </script>  
- <style>  
- .glass-header {  
-   background: rgba(12, 74, 110, 0.95);  
-   backdrop-filter: blur(8px);  
- }  
- .nav-tab.active {
-   border-bottom: 3px solid #0284c7;
-   color: #0284c7;
-   font-weight: 700;
- }
- </style>  
-</head>  
-<body class="h-full flex flex-col font-sans text-slate-800 antialiased">  
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Módulo Central de Control y Producción - UPE</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN para el Dashboard -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
 
- <!-- BANNER SUPERIOR -->  
- <header class="glass-header text-white sticky top-0 z-40 shadow-lg">  
-   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">  
-     <div class="flex items-center justify-between h-16">  
-       <div class="flex items-center space-x-3">  
-         <div class="p-2 bg-brand-500/20 border border-brand-500/30 rounded-xl flex items-center justify-center">  
-           <i class="fa-solid fa-chart-line text-xl text-brand-100"></i>  
-         </div>  
-         <div>  
-           <h1 class="font-bold text-base sm:text-lg tracking-tight leading-none">Módulo Central de Control y Producción</h1>  
-           <p class="text-[11px] text-brand-100 opacity-80 mt-0.5">Consolidado Multidisciplinario de Atención</p>  
-         </div>  
-       </div>  
-     </div>  
-   </div>  
- </header>  
+    <!-- Cabecera Institucional -->
+    <header class="bg-slate-900 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-emerald-600 p-2.5 rounded-lg shadow">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight">Módulo Central de Control y Producción</h1>
+                    <p class="text-xs text-slate-400">Consolidado Multidisciplinario de Atención - UPE</p>
+                </div>
+            </div>
+            <div class="mt-4 md:mt-0 flex items-center space-x-3">
+                <span id="estado-conexion" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    <span class="w-2 h-2 mr-1.5 bg-amber-400 rounded-full animate-pulse"></span> Sincronizando...
+                </span>
+                <button onclick="cargarDatosCentrales()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium px-3 py-1.5 rounded-lg border border-slate-700 transition flex items-center space-x-1">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    <span>Actualizar</span>
+                </button>
+            </div>
+        </div>
+    </header>
 
- <!-- PESTAÑAS DE NAVEGACIÓN -->
- <div class="bg-white border-b border-slate-200 sticky top-16 z-30 shadow-sm">
-   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-8 text-xs font-semibold text-slate-500">
-     <button onclick="cambiarPestana('vista-trazabilidad')" id="tab-trazabilidad" class="nav-tab active py-3.5 flex items-center space-x-2">
-       <i class="fa-solid fa-magnifying-glass"></i>
-       <span>TRAZABILIDAD 360° (VISTA DE TARJETAS)</span>
-     </button>
-     <button onclick="cambiarPestana('vista-produccion')" id="tab-produccion" class="nav-tab py-3.5 flex items-center space-x-2">
-       <i class="fa-solid fa-chart-pie"></i>
-       <span>DASHBOARD DE PRODUCCIÓN Y RENDIMIENTO</span>
-     </button>
-   </div>
- </div>
+    <!-- Navegación de Pestañas -->
+    <nav class="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 flex space-x-8">
+            <button onclick="cambiarPestaña('trazabilidad')" id="btn-tab-trazabilidad" class="py-4 px-1 border-b-2 font-medium text-sm border-emerald-600 text-emerald-600 flex items-center space-x-2 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <span>TRAZABILIDAD 360° (VISTA DE TARJETAS)</span>
+            </button>
+            <button onclick="cambiarPestaña('dashboard')" id="btn-tab-dashboard" class="py-4 px-1 border-b-2 font-medium text-sm border-transparent text-slate-500 hover:text-slate-700 flex items-center space-x-2 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg>
+                <span>DASHBOARD DE PRODUCCIÓN</span>
+            </button>
+        </div>
+    </nav>
 
- <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">  
-   
-   <!-- SECCIÓN 1: TRAZABILIDAD 360° -->
-   <div id="vista-trazabilidad" class="space-y-6">
-     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-       <h2 class="text-xs font-bold text-emerald-800 uppercase tracking-wider mb-1 flex items-center gap-2">
-         <i class="fa-solid fa-magnifying-glass"></i> CONSULTA DE TRAZABILIDAD TRANSVERSAL
-       </h2>
-       <p class="text-xs text-slate-500 mb-3">Ingrese <b>Apellidos</b>, <b>N° DNI</b>, <b>N° de Expediente</b> o <b>Hoja de Trámite</b> para consultar la situación en las tres especialidades.</p>
-       
-       <div class="flex gap-2">
-         <input type="text" id="inputBusquedaTrazabilidad" onkeyup="if(event.key==='Enter') buscarTrazabilidad360()" placeholder="Ej: APELLIDOS, DNI, N° EXPEDIENTE O HOJA DE TRÁMITE..." class="flex-1 p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs uppercase font-medium outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white">
-         <button type="button" onclick="buscarTrazabilidad360()" class="px-6 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-2">
-           <i class="fa-solid fa-bolt"></i> CONSULTAR EXPEDIENTE
-         </button>
-       </div>
-     </div>
+    <!-- Contenido Principal -->
+    <main class="max-w-7xl mx-auto px-4 py-8 flex-grow w-full">
 
-     <div id="contenedorResultadoTrazabilidad" class="space-y-6">
-       <!-- CABECERA DEL EXPEDIENTE MULTIDISCIPLINARIO: ORDEN [DNI, EXPEDIENTE, HOJA TRÁMITE CON AÑO AL FINAL] -->
-       <div class="bg-slate-900 text-white p-5 rounded-2xl shadow-md border border-slate-800">
-         <p class="text-[10px] font-bold tracking-wider text-emerald-400 uppercase">EXPEDIENTE MULTIDISCIPLINARIO</p>
-         <h3 id="txtNombreAdministrado" class="text-xl font-bold tracking-tight">-- REALICE UNA BÚSQUEDA --</h3>
-         <div class="flex flex-wrap gap-6 text-xs font-mono text-slate-300 mt-2">
-           <span>DNI: <strong id="txtDniAdministrado" class="text-emerald-400">---</strong></span>
-           <span>N° Expediente: <strong id="txtExpAdministrado" class="text-emerald-400">---</strong></span>
-           <span>N° Hoja Trámite: <strong id="txtHtAdministrado" class="text-emerald-400">---</strong></span>
-         </div>
-       </div>
+        <!-- Pestaña 1: Trazabilidad 360° -->
+        <section id="vista-trazabilidad" class="space-y-6">
+            <!-- Buscador -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Consulta de Trazabilidad Transversal</label>
+                <p class="text-xs text-slate-400 mb-4">Ingrese Apellidos, N° DNI, N° de Expediente o Hoja de Trámite para consultar la situación en las tres especialidades.</p>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <div class="relative flex-grow">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </span>
+                        <input type="text" id="input-criterio" placeholder="Ej. VERA, 06050804, EXP-2026..." class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none transition uppercase">
+                    </div>
+                    <button onclick="realizarBusquedaTrazabilidad()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-6 py-3 rounded-xl font-semibold text-sm shadow transition flex items-center justify-center space-x-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        <span>CONSULTAR EXPEDIENTE</span>
+                    </button>
+                </div>
+            </div>
 
-       <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-         <!-- MÓDULO LEGAL -->
-         <div class="bg-white rounded-2xl p-5 border-2 border-indigo-500/80 shadow-sm space-y-3">
-           <div class="flex items-center justify-between border-b pb-2">
-             <div class="flex items-center gap-2 font-bold text-xs text-slate-800">
-               <span>⚖️</span> <span>MÓDULO LEGAL</span>
-             </div>
-             <span id="stLegal" class="px-2.5 py-0.5 bg-indigo-100 text-indigo-700 rounded-md font-bold text-[10px]">SIN REGISTRO</span>
-           </div>
-           <div class="text-xs space-y-1.5 text-slate-600">
-             <p><b>Responsable:</b> <span id="respLegal">---</span></p>
-             <p><b>Detalle:</b> <span id="detLegal">---</span></p>
-             <p><b>Fecha Registro:</b> <span id="fecLegal">---</span></p>
-           </div>
-           <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs text-slate-700">
-             <p class="font-bold text-[10px] text-slate-500 uppercase mb-0.5">Proveído / Avance:</p>
-             <p id="obsLegal">Sin atenciones registradas.</p>
-           </div>
-         </div>
+            <!-- Tarjeta de Resultados 360 -->
+            <div class="bg-slate-900 rounded-2xl text-white shadow-xl overflow-hidden border border-slate-800">
+                <div class="bg-slate-800/60 px-6 py-4 border-b border-slate-800 flex justify-between items-center">
+                    <div>
+                        <span class="text-xs font-semibold tracking-wider text-emerald-400 uppercase">Expediente Multidisciplinario</span>
+                        <h2 id="card-administrado" class="text-lg font-bold text-white tracking-wide">-- REALICE UNA BÚSQUEDA --</h2>
+                    </div>
+                    <div class="text-right text-xs text-slate-400 space-y-0.5">
+                        <p>DNI: <span id="card-dni" class="font-mono text-slate-200">---</span></p>
+                        <p>N° Expediente: <span id="card-exp" class="font-mono text-slate-200">---</span></p>
+                        <p>Hoja Trámite: <span id="card-ht" class="font-mono text-slate-200">---</span></p>
+                    </div>
+                </div>
 
-         <!-- MÓDULO PSICOLOGÍA -->
-         <div class="bg-white rounded-2xl p-5 border-2 border-teal-500/80 shadow-sm space-y-3">
-           <div class="flex items-center justify-between border-b pb-2">
-             <div class="flex items-center gap-2 font-bold text-xs text-slate-800">
-               <span>🧠</span> <span>MÓDULO PSICOLOGÍA</span>
-             </div>
-             <span id="stPsico" class="px-2.5 py-0.5 bg-teal-100 text-teal-700 rounded-md font-bold text-[10px]">SIN REGISTRO</span>
-           </div>
-           <div class="text-xs space-y-1.5 text-slate-600">
-             <p><b>Responsable:</b> <span id="respPsico">---</span></p>
-             <p><b>Detalle:</b> <span id="detPsico">---</span></p>
-             <p><b>Fecha Registro:</b> <span id="fecPsico">---</span></p>
-           </div>
-           <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs text-slate-700">
-             <p class="font-bold text-[10px] text-slate-500 uppercase mb-0.5">Proveído / Avance:</p>
-             <p id="obsPsico">Sin atenciones registradas.</p>
-           </div>
-         </div>
+                <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Módulo Legal -->
+                    <div class="bg-slate-800/40 rounded-xl p-5 border border-slate-700/60 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-xs font-bold uppercase tracking-wider text-sky-400 flex items-center space-x-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-sky-400"></span> Módulo Legal
+                                </span>
+                                <span id="badge-legal" class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-700 text-slate-300">SIN REGISTRO</span>
+                            </div>
+                            <p class="text-xs text-slate-400 mb-1">Responsable: <strong id="resp-legal" class="text-slate-200">---</strong></p>
+                            <p class="text-xs text-slate-400 mb-1">Tipo / Detalle: <span id="det-legal" class="text-slate-200">-</span></p>
+                            <p class="text-xs text-slate-400">Fecha Reg: <span id="fec-legal" class="text-slate-200">-</span></p>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-700/40 text-xs text-slate-400 italic" id="obs-legal">
+                            Sin observaciones registradas.
+                        </div>
+                    </div>
 
-         <!-- TRABAJO SOCIAL -->
-         <div class="bg-white rounded-2xl p-5 border-2 border-emerald-500/80 shadow-sm space-y-3">
-           <div class="flex items-center justify-between border-b pb-2">
-             <div class="flex items-center gap-2 font-bold text-xs text-slate-800">
-               <span>🏠</span> <span>TRABAJO SOCIAL</span>
-             </div>
-             <span id="stSocial" class="px-2.5 py-0.5 bg-emerald-100 text-emerald-700 rounded-md font-bold text-[10px]">SIN REGISTRO</span>
-           </div>
-           <div class="text-xs space-y-1.5 text-slate-600">
-             <p><b>Responsable:</b> <span id="respSocial">---</span></p>
-             <p><b>Detalle:</b> <span id="detSocial">---</span></p>
-             <p><b>Fecha Registro:</b> <span id="fecSocial">---</span></p>
-           </div>
-           <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs text-slate-700">
-             <p class="font-bold text-[10px] text-slate-500 uppercase mb-0.5">Proveído / Avance:</p>
-             <p id="obsSocial">Sin atenciones registradas.</p>
-           </div>
-         </div>
-       </div>
-     </div>
-   </div>
+                    <!-- Módulo Psicología -->
+                    <div class="bg-slate-800/40 rounded-xl p-5 border border-slate-700/60 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-xs font-bold uppercase tracking-wider text-purple-400 flex items-center space-x-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-purple-400"></span> Módulo Psicología
+                                </span>
+                                <span id="badge-psico" class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-700 text-slate-300">SIN REGISTRO</span>
+                            </div>
+                            <p class="text-xs text-slate-400 mb-1">Responsable: <strong id="resp-psico" class="text-slate-200">---</strong></p>
+                            <p class="text-xs text-slate-400 mb-1">Intervención: <span id="det-psico" class="text-slate-200">-</span></p>
+                            <p class="text-xs text-slate-400">Fecha Evaluac.: <span id="fec-psico" class="text-slate-200">-</span></p>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-700/40 text-xs text-slate-400 italic" id="obs-psico">
+                            Sin observaciones registradas.
+                        </div>
+                    </div>
 
-   <!-- SECCIÓN 2: DASHBOARD DE PRODUCCIÓN -->
-   <div id="vista-produccion" class="space-y-6 hidden">
-     
-     <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
-       <div>
-         <label class="block text-[11px] font-bold text-slate-600 mb-1">FECHA DESDE:</label>
-         <input type="date" id="filtroFechaInicio" value="2026-09-01" oninput="aplicarFiltrosProduccion()" onchange="aplicarFiltrosProduccion()" class="w-full text-xs p-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
-       </div>
-       <div>
-         <label class="block text-[11px] font-bold text-slate-600 mb-1">FECHA HASTA:</label>
-         <input type="date" id="filtroFechaFin" value="2026-09-30" oninput="aplicarFiltrosProduccion()" onchange="aplicarFiltrosProduccion()" class="w-full text-xs p-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
-       </div>
-       <div>
-         <label class="block text-[11px] font-bold text-slate-600 mb-1">ESPECIALIDAD:</label>
-         <select id="filtroEspecialidad" onchange="aplicarFiltrosProduccion()" class="w-full text-xs p-2 bg-slate-50 border border-slate-200 rounded-xl outline-none font-medium">
-           <option value="TODAS">-- TODAS LAS ÁREAS --</option>
-           <option value="LEGAL">MÓDULO LEGAL</option>
-           <option value="PSICOLOGIA">PSICOLOGÍA</option>
-           <option value="TRABAJO_SOCIAL">TRABAJO SOCIAL</option>
-         </select>
-       </div>
-       <div>
-         <label class="block text-[11px] font-bold text-slate-600 mb-1">EQUIPO / TURNO:</label>
-         <select id="filtroEquipo" onchange="aplicarFiltrosProduccion()" class="w-full text-xs p-2 bg-slate-50 border border-slate-200 rounded-xl outline-none font-medium">
-           <option value="TODOS">-- TODOS LOS EQUIPOS --</option>
-           <option value="EQUIPO 1">EQUIPO 1</option>
-           <option value="EQUIPO 2">EQUIPO 2</option>
-           <option value="EQUIPO 3">EQUIPO 3</option>
-           <option value="EQUIPO 4">EQUIPO 4</option>
-           <option value="EQUIPO 5">EQUIPO 5</option>
-           <option value="EQUIPO 6">EQUIPO 6</option>
-         </select>
-       </div>
-       <div>
-         <button type="button" onclick="aplicarFiltrosProduccion()" class="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow transition">
-           <i class="fa-solid fa-filter mr-1"></i> ACTUALIZAR MÉTRICAS
-         </button>
-       </div>
-     </div>
+                    <!-- Módulo Trabajo Social -->
+                    <div class="bg-slate-800/40 rounded-xl p-5 border border-slate-700/60 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center space-x-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-amber-400"></span> Trabajo Social
+                                </span>
+                                <span id="badge-social" class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-700 text-slate-300">SIN REGISTRO</span>
+                            </div>
+                            <p class="text-xs text-slate-400 mb-1">Responsable: <strong id="resp-social" class="text-slate-200">---</strong></p>
+                            <p class="text-xs text-slate-400 mb-1">Clasificación S.E.: <span id="det-social" class="text-slate-200">-</span></p>
+                            <p class="text-xs text-slate-400">Fecha Visita: <span id="fec-social" class="text-slate-200">-</span></p>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-700/40 text-xs text-slate-400 italic" id="obs-social">
+                            Sin observaciones registradas.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-       <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
-         <div>
-           <p class="text-[10px] font-bold uppercase text-slate-400">Carga Total Asignada</p>
-           <h3 id="kpiProdTotal" class="text-2xl font-black text-slate-800">0</h3>
-         </div>
-         <div class="p-3 bg-blue-50 text-blue-600 rounded-xl"><i class="fa-solid fa-folder-tree text-xl"></i></div>
-       </div>
-       <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
-         <div>
-           <p class="text-[10px] font-bold uppercase text-slate-400">Atendidos / Concluidos</p>
-           <h3 id="kpiProdConcluidos" class="text-2xl font-black text-emerald-600">0</h3>
-         </div>
-         <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl"><i class="fa-solid fa-circle-check text-xl"></i></div>
-       </div>
-       <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
-         <div>
-           <p class="text-[10px] font-bold uppercase text-slate-400">Pendientes / En Proceso</p>
-           <h3 id="kpiProdPendientes" class="text-2xl font-black text-amber-500">0</h3>
-         </div>
-         <div class="p-3 bg-amber-50 text-amber-600 rounded-xl"><i class="fa-solid fa-clock text-xl"></i></div>
-       </div>
-       <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
-         <div>
-           <p class="text-[10px] font-bold uppercase text-slate-400">Eficiencia Global</p>
-           <h3 id="kpiProdEficiencia" class="text-2xl font-black text-indigo-600">0%</h3>
-         </div>
-         <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl"><i class="fa-solid fa-chart-line text-xl"></i></div>
-       </div>
-     </div>
+        <!-- Pestaña 2: Dashboard de Producción -->
+        <section id="vista-dashboard" class="hidden space-y-6">
+            <!-- Tarjetas de Resumen KPI -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center space-x-4">
+                    <div class="bg-emerald-50 text-emerald-600 p-3 rounded-xl">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Casos</p>
+                        <h3 id="kpi-total" class="text-2xl font-bold text-slate-800">0</h3>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center space-x-4">
+                    <div class="bg-sky-50 text-sky-600 p-3 rounded-xl">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Módulo Legal</p>
+                        <h3 id="kpi-legal" class="text-2xl font-bold text-slate-800">0</h3>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center space-x-4">
+                    <div class="bg-purple-50 text-purple-600 p-3 rounded-xl">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"></path></svg>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Psicología</p>
+                        <h3 id="kpi-psico" class="text-2xl font-bold text-slate-800">0</h3>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center space-x-4">
+                    <div class="bg-amber-50 text-amber-600 p-3 rounded-xl">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Trabajo Social</p>
+                        <h3 id="kpi-social" class="text-2xl font-bold text-slate-800">0</h3>
+                    </div>
+                </div>
+            </div>
 
-     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-       <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-         <h4 class="text-xs font-bold text-slate-700 uppercase mb-4 flex items-center gap-2">
-           <i class="fa-solid fa-chart-column text-blue-600"></i> Producción por Especialidad
-         </h4>
-         <div class="relative h-64">
-           <canvas id="chartProduccionEspecialidad"></canvas>
-         </div>
-       </div>
-       <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-         <h4 class="text-xs font-bold text-slate-700 uppercase mb-4 flex items-center gap-2">
-           <i class="fa-solid fa-users-gear text-purple-600"></i> Carga y Resolución por Equipos (1 al 6)
-         </h4>
-         <div class="relative h-64">
-           <canvas id="chartProduccionEquipos"></canvas>
-         </div>
-       </div>
-     </div>
+            <!-- Gráficos -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-slate-600 mb-4">Distribución por Módulo de Atención</h3>
+                    <div class="relative h-72 flex justify-center items-center">
+                        <canvas id="chartModulos"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-slate-600 mb-4">Estado de los Expedientes</h3>
+                    <div class="relative h-72 flex justify-center items-center">
+                        <canvas id="chartEstados"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-   </div>
+    </main>
 
- </main>
+    <!-- Pie de página -->
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+        UPE - Módulo Central de Articulación Multidisciplinaria &copy; 2026
+    </footer>
 
- <script>
- const URL_GOOGLE_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbz70Pkrykx4n603ulSEtwrFFQAwO285RyOlmUAmVIrIh97iqKwdD3BtlidImyTDEM6adQ/exec";
+    <!-- Lógica JavaScript -->
+    <script>
+        const URL_GOOGLE_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbz70Pkrykx4n603ulSEtwrFFQAwO285RyOlmUAmVIrIh97iqKwdD3BtlidImyTDEM6adQ/exec";
 
- // MATRICES LIMPIAS PARA RECIBIR Tus NUEVOS DATOS REALES
- const MOCK_TRAZABILIDAD = [];
- const MOCK_GENERAL = [];
+        let BD_GLOBAL_TRAZABILIDAD = [];
+        let chartModulosInstance = null;
+        let chartEstadosInstance = null;
 
- var listaExpedientes = MOCK_GENERAL;
- var chartEspProd = null;
- var chartEqProd = null;
+        window.addEventListener('DOMContentLoaded', () => {
+            cargarDatosCentrales();
+        });
 
- document.addEventListener('DOMContentLoaded', async function() {
-   await sincronizarDatosRemotos();
-   aplicarFiltrosProduccion();
- });
+        function cambiarPestaña(pestana) {
+            const btnTra = document.getElementById('btn-tab-trazabilidad');
+            const btnDas = document.getElementById('btn-tab-dashboard');
+            const secTra = document.getElementById('vista-trazabilidad');
+            const secDas = document.getElementById('vista-dashboard');
 
- async function sincronizarDatosRemotos() {
-   if (!URL_GOOGLE_APPS_SCRIPT) return;
-   try {
-     const response = await fetch(`${URL_GOOGLE_APPS_SCRIPT}?accion=obtenerConsolidado`);
-     const data = await response.json();
-     if (data && data.trazabilidad && data.trazabilidad.length > 0) {
-       MOCK_TRAZABILIDAD.length = 0;
-       MOCK_TRAZABILIDAD.push(...data.trazabilidad);
-     }
-     if (data && data.general && data.general.length > 0) {
-       MOCK_GENERAL.length = 0;
-       MOCK_GENERAL.push(...data.general);
-       listaExpedientes = MOCK_GENERAL;
-     }
-   } catch (err) {
-     console.warn("Esperando conexión con el servidor de datos.", err);
-   }
- }
+            if (pestana === 'trazabilidad') {
+                btnTra.className = "py-4 px-1 border-b-2 font-medium text-sm border-emerald-600 text-emerald-600 flex items-center space-x-2 transition";
+                btnDas.className = "py-4 px-1 border-b-2 font-medium text-sm border-transparent text-slate-500 hover:text-slate-700 flex items-center space-x-2 transition";
+                secTra.classList.remove('hidden');
+                secDas.classList.add('hidden');
+            } else {
+                btnDas.className = "py-4 px-1 border-b-2 font-medium text-sm border-emerald-600 text-emerald-600 flex items-center space-x-2 transition";
+                btnTra.className = "py-4 px-1 border-b-2 font-medium text-sm border-transparent text-slate-500 hover:text-slate-700 flex items-center space-x-2 transition";
+                secDas.classList.remove('hidden');
+                secTra.classList.add('hidden');
+                actualizarDashboardGraficos();
+            }
+        }
 
- function cambiarPestana(vistaId) {
-   document.getElementById('vista-trazabilidad').classList.add('hidden');
-   document.getElementById('vista-produccion').classList.add('hidden');
-   document.getElementById('tab-trazabilidad').classList.remove('active');
-   document.getElementById('tab-produccion').classList.remove('active');
+        async function cargarDatosCentrales() {
+            const lblEstado = document.getElementById('estado-conexion');
+            lblEstado.className = "inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20";
+            lblEstado.innerHTML = `<span class="w-2 h-2 mr-1.5 bg-amber-400 rounded-full animate-pulse"></span> Sincronizando...`;
 
-   document.getElementById(vistaId).classList.remove('hidden');
-   if (vistaId === 'vista-trazabilidad') {
-     document.getElementById('tab-trazabilidad').classList.add('active');
-   } else {
-     document.getElementById('tab-produccion').classList.add('active');
-     sincronizarDatosRemotos().then(() => aplicarFiltrosProduccion());
-   }
- }
+            try {
+                const response = await fetch(`${URL_GOOGLE_APPS_SCRIPT}?accion=obtenerConsolidado`);
+                const resultado = await response.json();
 
- function normalizarTexto(texto) {
-   if (!texto) return '';
-   return texto
-     .toString()
-     .normalize("NFD")
-     .replace(/[\u0300-\u036f]/g, "")
-     .toUpperCase()
-     .trim();
- }
+                if (resultado && resultado.trazabilidad) {
+                    BD_GLOBAL_TRAZABILIDAD = resultado.trazabilidad;
+                    lblEstado.className = "inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+                    lblEstado.innerHTML = `<span class="w-2 h-2 mr-1.5 bg-emerald-400 rounded-full"></span> Conectado en Vivo`;
+                } else {
+                    throw new Error("Estructura inválida");
+                }
+            } catch (error) {
+                console.error("Error al sincronizar:", error);
+                lblEstado.className = "inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20";
+                lblEstado.innerHTML = `<span class="w-2 h-2 mr-1.5 bg-rose-400 rounded-full"></span> Error de Conexión`;
+            }
+        }
 
- async function buscarTrazabilidad360() {
-   await sincronizarDatosRemotos();
-   
-   var inputValor = document.getElementById('inputBusquedaTrazabilidad').value;
-   var busqueda = normalizarTexto(inputValor);
+        function realizarBusquedaTrazabilidad() {
+            const criterio = document.getElementById('input-criterio').value.trim().toUpperCase();
+            if (!criterio) {
+                alert("Por favor ingrese un criterio de búsqueda (DNI, Expediente o Apellidos).");
+                return;
+            }
 
-   if (!busqueda) {
-     alert("Por favor, ingrese un criterio: Apellidos, N° DNI, N° Expediente o N° Hoja de Trámite.");
-     return;
-   }
+            const encontrado = BD_GLOBAL_TRAZABILIDAD.find(item => {
+                const admin = (item.administrado || "").toUpperCase();
+                const dni = (item.dni || "").toUpperCase();
+                const exp = (item.expediente || "").toUpperCase();
+                const ht = (item.ht || "").toUpperCase();
+                return admin.includes(criterio) || dni.includes(criterio) || exp.includes(criterio) || ht.includes(criterio);
+            });
 
-   if (MOCK_TRAZABILIDAD.length === 0) {
-     alert("No se encontraron registros activos en la base de datos central.");
-     return;
-   }
+            if (!encontrado) {
+                alert("No se encontraron registros activos en la base de datos central.");
+                limpiarTarjetaTrazabilidad();
+                return;
+            }
 
-   // BÚSQUEDA FLEXIBLE (SOPORTA COINCIDENCIA PARCIAL EN NÚMEROS Y AÑOS)
-   var encontrado = MOCK_TRAZABILIDAD.find(function(item) {
-     var matchApellidos  = normalizarTexto(item.administrado).includes(busqueda);
-     var matchDni        = normalizarTexto(item.dni).includes(busqueda);
-     var matchExpediente = normalizarTexto(item.expediente).includes(busqueda) || normalizarTexto(item.expediente).startsWith(busqueda + "-");
-     var matchHT         = normalizarTexto(item.ht).includes(busqueda) || normalizarTexto(item.ht).startsWith(busqueda + "-");
+            // Llenar tarjeta de resultados
+            document.getElementById('card-administrado').innerText = encontrado.administrado;
+            document.getElementById('card-dni').innerText = encontrado.dni;
+            document.getElementById('card-exp').innerText = encontrado.expediente;
+            document.getElementById('card-ht').innerText = encontrado.ht;
 
-     return matchApellidos || matchDni || matchExpediente || matchHT;
-   });
+            // Módulo Legal
+            document.getElementById('badge-legal').innerText = encontrado.legal.estado;
+            document.getElementById('badge-legal').className = obtenerClaseBadge(encontrado.legal.estado);
+            document.getElementById('resp-legal').innerText = encontrado.legal.resp;
+            document.getElementById('det-legal').innerText = encontrado.legal.det;
+            document.getElementById('fec-legal').innerText = encontrado.legal.fec;
+            document.getElementById('obs-legal').innerText = encontrado.legal.obs;
 
-   if (!encontrado) {
-     alert("No se encontró ningún registro que coincida con: '" + inputValor + "'.");
-     return;
-   }
+            // Módulo Psicología
+            document.getElementById('badge-psico').innerText = encontrado.psico.estado;
+            document.getElementById('badge-psico').className = obtenerClaseBadge(encontrado.psico.estado);
+            document.getElementById('resp-psico').innerText = encontrado.psico.resp;
+            document.getElementById('det-psico').innerText = encontrado.psico.det;
+            document.getElementById('fec-psico').innerText = encontrado.psico.fec;
+            document.getElementById('obs-psico').innerText = encontrado.psico.obs;
 
-   document.getElementById('txtNombreAdministrado').innerText = encontrado.administrado;
-   document.getElementById('txtDniAdministrado').innerText = encontrado.dni;
-   document.getElementById('txtExpAdministrado').innerText = encontrado.expediente;
-   document.getElementById('txtHtAdministrado').innerText = encontrado.ht;
+            // Módulo Trabajo Social
+            document.getElementById('badge-social').innerText = encontrado.social.estado;
+            document.getElementById('badge-social').className = obtenerClaseBadge(encontrado.social.estado);
+            document.getElementById('resp-social').innerText = encontrado.social.resp;
+            document.getElementById('det-social').innerText = encontrado.social.det;
+            document.getElementById('fec-social').innerText = encontrado.social.fec;
+            document.getElementById('obs-social').innerText = encontrado.social.obs;
+        }
 
-   document.getElementById('stLegal').innerText = encontrado.legal.estado;
-   document.getElementById('respLegal').innerText = encontrado.legal.resp;
-   document.getElementById('detLegal').innerText = encontrado.legal.det;
-   document.getElementById('fecLegal').innerText = encontrado.legal.fec;
-   document.getElementById('obsLegal').innerText = encontrado.legal.obs;
+        function obtenerClaseBadge(estado) {
+            const est = (estado || "").toUpperCase();
+            if (est.includes("CONCLUIDO") || est.includes("ATENDIDO") || est.includes("FAVORABLE")) {
+                return "px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+            } else if (est.includes("PROCESO") || est.includes("PENDIENTE")) {
+                return "px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-500/20 text-amber-300 border border-amber-500/30";
+            }
+            return "px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-700 text-slate-300";
+        }
 
-   document.getElementById('stPsico').innerText = encontrado.psico.estado;
-   document.getElementById('respPsico').innerText = encontrado.psico.resp;
-   document.getElementById('detPsico').innerText = encontrado.psico.det;
-   document.getElementById('fecPsico').innerText = encontrado.psico.fec;
-   document.getElementById('obsPsico').innerText = encontrado.psico.obs;
+        function limpiarTarjetaTrazabilidad() {
+            document.getElementById('card-administrado').innerText = "-- REALICE UNA BÚSQUEDA --";
+            document.getElementById('card-dni').innerText = "---";
+            document.getElementById('card-exp').innerText = "---";
+            document.getElementById('card-ht').innerText = "---";
+            
+            ['legal', 'psico', 'social'].forEach(mod => {
+                document.getElementById(`badge-${mod}`).innerText = "SIN REGISTRO";
+                document.getElementById(`badge-${mod}`).className = "px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-700 text-slate-300";
+                document.getElementById(`resp-${mod}`).innerText = "---";
+                document.getElementById(`det-${mod}`).innerText = "-";
+                document.getElementById(`fec-${mod}`).innerText = "-";
+                document.getElementById(`obs-${mod}`).innerText = "Sin observaciones registradas.";
+            });
+        }
 
-   document.getElementById('stSocial').innerText = encontrado.social.estado;
-   document.getElementById('respSocial').innerText = encontrado.social.resp;
-   document.getElementById('detSocial').innerText = encontrado.social.det;
-   document.getElementById('fecSocial').innerText = encontrado.social.fec;
-   document.getElementById('obsSocial').innerText = encontrado.social.obs;
- }
+        function actualizarDashboardGraficos() {
+            let total = BD_GLOBAL_TRAZABILIDAD.length;
+            let countLegal = BD_GLOBAL_TRAZABILIDAD.filter(x => x.legal.estado !== "SIN REGISTRO").length;
+            let countPsico = BD_GLOBAL_TRAZABILIDAD.filter(x => x.psico.estado !== "SIN REGISTRO").length;
+            let countSocial = BD_GLOBAL_TRAZABILIDAD.filter(x => x.social.estado !== "SIN REGISTRO").length;
 
- function aplicarFiltrosProduccion() {
-   var espSel = document.getElementById('filtroEspecialidad').value;
-   var eqSel = document.getElementById('filtroEquipo').value;
-   var fInicio = document.getElementById('filtroFechaInicio').value;
-   var fFin = document.getElementById('filtroFechaFin').value;
+            document.getElementById('kpi-total').innerText = total;
+            document.getElementById('kpi-legal').innerText = countLegal;
+            document.getElementById('kpi-psico').innerText = countPsico;
+            document.getElementById('kpi-social').innerText = countSocial;
 
-   var filtrados = listaExpedientes.filter(function(item) {
-     var modItem = normalizarTexto(item.modulo);
-     var eqItem = normalizarTexto(item.equipo);
-     var espSelLimpio = normalizarTexto(espSel);
+            // Gráfico de Módulos
+            const ctxMod = document.getElementById('chartModulos').getContext('2d');
+            if (chartModulosInstance) chartModulosInstance.destroy();
+            chartModulosInstance = new Chart(ctxMod, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Módulo Legal', 'Psicología', 'Trabajo Social'],
+                    datasets: [{
+                        data: [countLegal, countPsico, countSocial],
+                        backgroundColor: ['#0ea5e9', '#a855f7', '#f59e0b']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
 
-     var cumpleEsp = (espSel === 'TODAS' || modItem.includes(espSelLimpio));
-     var cumpleEq = (eqSel === 'TODOS' || eqItem.includes(normalizarTexto(eqSel)));
-
-     var cumpleFecha = true;
-     if (item.fechaRegistro) {
-       var tItem = new Date(item.fechaRegistro + 'T00:00:00').getTime();
-       if (fInicio) {
-         var tInicio = new Date(fInicio + 'T00:00:00').getTime();
-         cumpleFecha = cumpleFecha && (tItem >= tInicio);
-       }
-       if (fFin) {
-         var tFin = new Date(fFin + 'T23:59:59').getTime();
-         cumpleFecha = cumpleFecha && (tItem <= tFin);
-       }
-     }
-
-     return cumpleEsp && cumpleEq && cumpleFecha;
-   });
-
-   var total = filtrados.length;
-   var concluidos = filtrados.filter(function(r) { 
-     var st = normalizarTexto(r.situacion || r.estado);
-     return st.includes('2.') || st.includes('3.') || st.includes('4.') || st.includes('CONCLUIDO') || st.includes('EMITIDO');
-   }).length;
-
-   var pendientes = total - concluidos;
-   var eficacia = total > 0 ? ((concluidos / total) * 100).toFixed(1) : "0.0";
-
-   document.getElementById('kpiProdTotal').innerText = total;
-   document.getElementById('kpiProdConcluidos').innerText = concluidos;
-   document.getElementById('kpiProdPendientes').innerText = pendientes;
-   document.getElementById('kpiProdEficiencia').innerText = eficacia + '%';
-
-   var ctxEsp = document.getElementById('chartProduccionEspecialidad').getContext('2d');
-   if (chartEspProd) chartEspProd.destroy();
-
-   var legConc = filtrados.filter(r => r.modulo.includes('LEGAL') && (r.estado.includes('2.') || r.estado.includes('3.') || r.estado.includes('4.') || r.estado.includes('CONCLUIDO') || r.estado.includes('EMITIDO'))).length;
-   var legProc = filtrados.filter(r => r.modulo.includes('LEGAL') && !(r.estado.includes('2.') || r.estado.includes('3.') || r.estado.includes('4.') || r.estado.includes('CONCLUIDO') || r.estado.includes('EMITIDO'))).length;
-
-   var psiConc = filtrados.filter(r => r.modulo.includes('PSICO') && (r.estado.includes('2.') || r.estado.includes('3.') || r.estado.includes('4.') || r.estado.includes('CONCLUIDO') || r.estado.includes('EMITIDO'))).length;
-   var psiProc = filtrados.filter(r => r.modulo.includes('PSICO') && !(r.estado.includes('2.') || r.estado.includes('3.') || r.estado.includes('4.') || r.estado.includes('CONCLUIDO') || r.estado.includes('EMITIDO'))).length;
-
-   var socConc = filtrados.filter(r => r.modulo.includes('SOCIAL') && (r.estado.includes('2.') || r.estado.includes('3.') || r.estado.includes('4.') || r.estado.includes('CONCLUIDO') || r.estado.includes('EMITIDO'))).length;
-   var socProc = filtrados.filter(r => r.modulo.includes('SOCIAL') && !(r.estado.includes('2.') || r.estado.includes('3.') || r.estado.includes('4.') || r.estado.includes('CONCLUIDO') || r.estado.includes('EMITIDO'))).length;
-
-   chartEspProd = new Chart(ctxEsp, {
-     type: 'bar',
-     data: {
-       labels: ['Legal ⚖️', 'Psicología 🧠', 'Trabajo Social 🏠'],
-       datasets: [
-         { label: 'Concluidos / Emitidos', data: [legConc, psiConc, socConc], backgroundColor: '#10b981' },
-         { label: 'En Proceso / Pendientes', data: [legProc, psiProc, socProc], backgroundColor: '#f59e0b' }
-       ]
-     },
-     options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
-   });
-
-   var ctxEq = document.getElementById('chartProduccionEquipos').getContext('2d');
-   if (chartEqProd) chartEqProd.destroy();
-
-   var equipos = ['EQUIPO 1', 'EQUIPO 2', 'EQUIPO 3', 'EQUIPO 4', 'EQUIPO 5', 'EQUIPO 6'];
-   var conteoEq = equipos.map(eq => filtrados.filter(r => r.equipo.includes(eq)).length);
-
-   chartEqProd = new Chart(ctxEq, {
-     type: 'bar',
-     data: {
-       labels: ['Eq. 1', 'Eq. 2', 'Eq. 3', 'Eq. 4', 'Eq. 5', 'Eq. 6'],
-       datasets: [{ label: 'Carga Total Procesada', data: conteoEq, backgroundColor: '#0284c7' }]
-     },
-     options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
-   });
- }
- </script>
-</body>  
+            // Gráfico de Estados
+            const ctxEst = document.getElementById('chartEstados').getContext('2d');
+            if (chartEstadosInstance) chartEstadosInstance.destroy();
+            chartEstadosInstance = new Chart(ctxEst, {
+                type: 'bar',
+                data: {
+                    labels: ['Registrados', 'Concluidos / Atendidos'],
+                    datasets: [{
+                        label: 'Casos',
+                        data: [total, countLegal + countPsico + countSocial],
+                        backgroundColor: '#10b981'
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+            });
+        }
+    </script>
+</body>
 </html>
