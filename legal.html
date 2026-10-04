@@ -393,7 +393,7 @@
         let paginaActual = 1;
         const registrosPorPagina = 10;
         let listaFiltradaActual = null;
-        let datosOriginalesEdicion = null; // Para detectar cambios reales al editar
+        let datosOriginalesEdicion = null;
 
         function formatearFecha(fechaStr) {
             if (!fechaStr) return '-';
@@ -510,7 +510,10 @@
             if (editIndex >= 0 && registros[editIndex].codigo) {
                 codigoGenerado = registros[editIndex].codigo;
             } else {
-                const maxNum = registros.length > 0 ? Math.max(...registros.map(r => parseInt((r.codigo || 'LEG-0').replace('LEG-', '')) || 0)) : 0;
+                const maxNum = registros.length > 0 ? Math.max(...registros.map(r => {
+                    let codStr = String(r.codigo || 'LEG-0');
+                    return parseInt(codStr.replace('LEG-', '')) || 0;
+                })) : 0;
                 codigoGenerado = 'LEG-' + String(maxNum + 1).padStart(4, '0');
             }
 
@@ -542,7 +545,6 @@
             };
 
             if (editIndex >= 0) {
-                // Validar si realmente hubo cambios respecto a los datos originales de edición
                 if (datosOriginalesEdicion && JSON.stringify(reg) === JSON.stringify(datosOriginalesEdicion)) {
                     alert("⚠️ No se ha realizado ninguna modificación en el expediente.");
                     if (btn) btn.disabled = false;
@@ -659,7 +661,6 @@
             document.getElementById("tipoAsesoria").value = r.tipoAsesoria;
             document.getElementById("observaciones").value = r.observaciones;
 
-            // Guardar copia exacta de los datos originales para comparar cambios
             datosOriginalesEdicion = JSON.parse(JSON.stringify(r));
 
             document.getElementById("btnGuardarText").innerHTML = `<i class="fa-solid fa-pen-to-square"></i> ACTUALIZAR EXPEDIENTE`;
