@@ -393,6 +393,7 @@
         let paginaActual = 1;
         const registrosPorPagina = 10;
         let listaFiltradaActual = null;
+        let datosOriginalesEdicion = null; // Para detectar cambios reales al editar
 
         function formatearFecha(fechaStr) {
             if (!fechaStr) return '-';
@@ -449,7 +450,7 @@
                 }
             } catch (err) {
                 console.error("No se pudo cargar desde Google Sheets (usando caché local):", err);
-                if (!silencioso) alert("⚠️️ No se pudo conectar con Google Sheets, se muestran los datos locales.");
+                if (!silencioso) alert("⚠️ No se pudo conectar con Google Sheets, se muestran los datos locales.");
             }
         }
 
@@ -541,6 +542,12 @@
             };
 
             if (editIndex >= 0) {
+                // Validar si realmente hubo cambios respecto a los datos originales de edición
+                if (datosOriginalesEdicion && JSON.stringify(reg) === JSON.stringify(datosOriginalesEdicion)) {
+                    alert("⚠️ No se ha realizado ninguna modificación en el expediente.");
+                    if (btn) btn.disabled = false;
+                    return false;
+                }
                 registros[editIndex] = reg;
                 alert("✅ Expediente legal actualizado correctamente.");
             } else {
@@ -652,6 +659,9 @@
             document.getElementById("tipoAsesoria").value = r.tipoAsesoria;
             document.getElementById("observaciones").value = r.observaciones;
 
+            // Guardar copia exacta de los datos originales para comparar cambios
+            datosOriginalesEdicion = JSON.parse(JSON.stringify(r));
+
             document.getElementById("btnGuardarText").innerHTML = `<i class="fa-solid fa-pen-to-square"></i> ACTUALIZAR EXPEDIENTE`;
             cambiarPestana('tab-formulario');
         }
@@ -742,6 +752,7 @@
         function limpiarFormulario() {
             document.getElementById("legalForm").reset();
             document.getElementById("editIndex").value = "-1";
+            datosOriginalesEdicion = null;
             document.getElementById("btnGuardarText").innerHTML = `<i class="fa-solid fa-floppy-disk"></i> REGISTRAR EXPEDIENTE`;
             const hoy = new Date().toISOString().split('T')[0];
             document.getElementById('fechaRegistro').value = hoy;
